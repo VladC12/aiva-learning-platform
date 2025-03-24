@@ -1,5 +1,3 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
 ## Getting Started
 
 First, run the development server:
@@ -16,21 +14,24 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Enviroment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Required
 
-## Learn More
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `MONGODB_URI` | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/db` |
+| `AZURE_STORAGE_ACCOUNT_NAME` | Azure Storage account name | `mystorageaccount` |
+| `AZURE_STORAGE_ACCOUNT_KEY` | Azure Storage access key | `abcd1234...` |
+| `AZURE_STORAGE_CONTAINER_NAME` | Azure Storage container name | `mycontainer` |
+| `EMAIL_HOST` | SMTP server hostname | `smtp.gmail.com` |
+| `EMAIL_FROM` | Sender email address | `no-reply@yourapp.com` |
+| `EMAIL_PASSWORD` | SMTP password | `your-app-specific-password` |
+| `NEXT_PUBLIC_APP_URL` | Public URL of your application (in development, defaults to http://localhost:3000) | `https://example.com` |
 
-To learn more about Next.js, take a look at the following resources:
+### Optional
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `EMAIL_PORT` | SMTP server port | `587` |
+| `EMAIL_SECURE` | Use SSL/TLS | `true` |
