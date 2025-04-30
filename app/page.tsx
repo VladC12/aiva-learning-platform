@@ -30,23 +30,6 @@ export default function Home() {
         difficulties: difficultyLevels // Default to all difficulties
     });
 
-    const handleFilterChange = (field: keyof FilterState) => (
-        event: React.ChangeEvent<HTMLSelectElement>
-    ) => {
-        if (field === 'subject') {
-            setFilters(prev => ({
-                ...prev,
-                subject: event.target.value,
-                topics: [] // Reset topics when subject changes
-            }));
-        } else {
-            setFilters(prev => ({
-                ...prev,
-                [field]: event.target.value
-            }));
-        }
-    };
-
     const handleTopicsChange = (selected: string[]) => {
         setFilters(prev => ({
             ...prev,
