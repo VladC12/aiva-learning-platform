@@ -21,9 +21,10 @@ type ContentPart = TextContent | MathContent | ListContent;
 export interface Question {
   _id: ObjectId;
   difficulty_level: string;
+  education_board: string;
+  class: string;
   topic: string;
   subject: string;
-  diagram_text_latex: string;
-  question_pdf_blob: string;
-  solution_pdf_blob: string;
+  question: string;
+  solution: string;
 }

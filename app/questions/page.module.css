@@ -73,21 +73,15 @@
   color: #0a3622;
 }
 
-.difficulty-difficult {
+.difficulty-medium {
   background-color: #fff3cd;
   color: #664d03;
 }
 
-.difficulty-very {
+.difficulty-hard {
   background-color: #ffe5d0;
   color: #7c2d12;
 }
-
-.difficulty-extremly {
-  background-color: #f8d7da;
-  color: #58151c;
-}
-
 
 .questionCount {
   margin-top: 1rem;
@@ -112,6 +106,20 @@
   gap: 1rem;
   padding: 0rem 1rem 1rem 1rem;
   overflow: hidden;
+}
+
+.questionArea > * {
+  max-width: 60%;
+  flex: 1;
+}
+
+.questionArea:only-child {
+  justify-content: center;
+}
+
+.questionArea > :only-child {
+  max-width: 60%;
+  margin: 0 auto;
 }
 
 .questionContent {

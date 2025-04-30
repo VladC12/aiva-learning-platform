@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Button from '../components/Button';
-import PDFViewer from '../components/PDFViewer';
 import styles from './page.module.css';
 import { Question } from '@/models/Question';
+import MarkdownMathRenderer from 'app/components/MarkdownMathRenderer';
 
 export default function QuestionsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -112,19 +112,12 @@ export default function QuestionsPage() {
           <div className={styles.questionArea}>
             <div className={styles.questionContent}>
               <br />
-              {currentQuestion?.question_pdf_blob && (
-                <div className={styles.pdfContainer}>
-                  <PDFViewer file={currentQuestion.question_pdf_blob} scaleDefault={2} isDemo={isDemo} />
-                </div>
-              )}
+              <MarkdownMathRenderer content={currentQuestion.question}/>
             </div>
 
-            {showSolution && currentQuestion?.solution_pdf_blob && (
+            {showSolution && (
               <div className={styles.solution}>
-                <h3>Solution</h3>
-                <div className={styles.pdfContainer}>
-                  <PDFViewer file={currentQuestion.solution_pdf_blob} isDemo={isDemo} />
-                </div>
+                <MarkdownMathRenderer content={currentQuestion.solution}/>
                 <div className={styles.markButtons}>
                   <Button variant="failed" onClick={() => handleMarkQuestion('failed')}>Failed</Button>
                   <Button variant="unsure" onClick={() => handleMarkQuestion('unsure')}>Unsure</Button>
