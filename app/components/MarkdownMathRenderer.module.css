@@ -1,0 +1,44 @@
+.wrapper {
+    background-color: #ebebeb18;
+    padding: 1rem;
+    font-family: system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+    overflow-y: scroll;
+}
+
+.wrapper h1,
+.wrapper h2,
+.wrapper h3 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+.wrapper p {
+    margin: 1em 0;
+}
+
+.wrapper code {
+    background: #f6f8fa;
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.wrapper pre {
+    background: #f6f8fa;
+    padding: 1em;
+    border-radius: 6px;
+    overflow: auto;
+}
+
+.wrapper ul {
+    padding-left: 1.5em;
+}
+
+.wrapper blockquote {
+    border-left: 4px solid #ccc;
+    padding-left: 1em;
+    color: #666;
+}
