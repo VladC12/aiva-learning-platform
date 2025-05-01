@@ -10,6 +10,7 @@ interface User {
   middle_name?: string;
   last_name: string;
   education_board: string;
+  type?: string;
   country_of_residence?: string;
   birthdate?: string;
   profile_picture?: string;
