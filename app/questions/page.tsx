@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Button from '../components/Button';
 import styles from './page.module.css';
 import { Question } from '@/models/Question';
@@ -9,12 +10,37 @@ export default function QuestionsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Check for required URL parameters
+    const requiredParams = ['education_board', 'class', 'subject', 'topic', 'difficulty_level'];
+    const missingParams = requiredParams.filter(param => !searchParams.has(param));
+    
+    if (missingParams.length > 0) {
+      // Redirect to home page or a selection page if parameters are missing
+      router.push('/');
+      return;
+    }
+
     const fetchQuestions = async () => {
       try {
-        // First try to fetch from protected endpoint
-        let response = await fetch(`${window.location.origin}/api/questions`);
+        // Build parameters object from search params
+        const paramObject: Record<string, string> = {};
+        requiredParams.forEach(param => {
+          const value = searchParams.get(param);
+          if (value) paramObject[param] = value;
+        });
+
+        // Use POST request instead of GET and send parameters in the body
+        const response = await fetch('/api/questions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(paramObject),
+        });
 
         if (!response.ok) {
           throw new Error('Failed to fetch questions');
@@ -31,7 +57,7 @@ export default function QuestionsPage() {
     };
 
     fetchQuestions();
-  }, []);
+  }, [router, searchParams]);
 
   if (loading) {
     return <div>Loading questions...</div>;
