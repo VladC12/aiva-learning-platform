@@ -4,9 +4,11 @@ import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import MultiSelect from './components/MultiSelect';
 import Dropdown from './components/Dropdown';
+import QuestionList from './components/QuestionList';
 
 interface FilterState {
     curriculum: string;
+    class: string;
     subject: string;
     topics: string[];
     difficulties: string[];
@@ -21,14 +23,18 @@ const subjectTopicsMap: { [key: string]: string[] } = {
 
 const difficultyLevels = ['Easy', 'Medium', 'Hard'];
 
+
 export default function Home() {
     const router = useRouter();
     const [filters, setFilters] = useState<FilterState>({
         curriculum: '',
+        class: '',
         subject: '',
         topics: [],
         difficulties: difficultyLevels // Default to all difficulties
     });
+
+    useEffect(() => { }, [])
 
     const handleTopicsChange = (selected: string[]) => {
         setFilters(prev => ({
@@ -61,18 +67,26 @@ export default function Home() {
                 <div className={styles.filterGrid}>
                     <div className={styles.filterItem}>
                         <Dropdown
-                            label="Curriculum"
+                            label="Education Board"
                             value={filters.curriculum}
                             onChange={(value) => setFilters(prev => ({ ...prev, curriculum: value }))}
                             options={[
-                                { value: "CBSE", label: "CBSE" },
-                                { value: "ICSE", label: "ICSE" },
-                                { value: "IB", label: "IB" }
+                                { value: "CBSE", label: "CBSE" }
                             ]}
                             placeholder="Select Curriculum"
                         />
                     </div>
-
+                    <div className={styles.filterItem}>
+                        <Dropdown
+                            label="Class"
+                            value={filters.curriculum}
+                            onChange={(value) => setFilters(prev => ({ ...prev, curriculum: value }))}
+                            options={[
+                                { value: "XII", label: "XII" }
+                            ]}
+                            placeholder="Select Class"
+                        />
+                    </div>
                     <div className={styles.filterItem}>
                         <Dropdown
                             label="Subject"
@@ -117,6 +131,7 @@ export default function Home() {
                     Generate Questions
                 </button>
             </form>
+            <QuestionList />
         </main>
     );
 }
