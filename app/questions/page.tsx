@@ -66,12 +66,12 @@ export default function QuestionsPage() {
     </div>
   );
 
-  
+
   function QuestionsContent({ questions }: { questions: Question[] }) {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [showSolution, setShowSolution] = useState(false);
     const currentQuestion = questions[currentQuestionIndex];
-    
+
     const getDifficultyClass = (difficulty: string) => {
       const firstWord = difficulty.split(' ')[0].toLowerCase();
       console.log(`difficulty-${firstWord} vs ${difficulty}`)
@@ -100,6 +100,8 @@ export default function QuestionsPage() {
             Question: {`${currentQuestionIndex + 1} / ${questions.length}`}
           </div>
           <div className={styles.information}>
+            <div><strong>Education Board:</strong> {currentQuestion.education_board}</div>
+            <div><strong>Class:</strong> {currentQuestion.class}</div>
             <div><strong>Topic:</strong> {currentQuestion.topic}</div>
             <div><strong>Subject:</strong> {currentQuestion.subject}</div>
             <div><strong>Difficulty:</strong> <span className={`${styles.difficulty} ${styles[getDifficultyClass(currentQuestion.difficulty_level)]}`}>
@@ -112,12 +114,12 @@ export default function QuestionsPage() {
           <div className={styles.questionArea}>
             <div className={styles.questionContent}>
               <br />
-              <MarkdownMathRenderer content={currentQuestion.question}/>
+              <MarkdownMathRenderer content={currentQuestion.question} />
             </div>
 
             {showSolution && (
               <div className={styles.solution}>
-                <MarkdownMathRenderer content={currentQuestion.solution}/>
+                <MarkdownMathRenderer content={currentQuestion.solution} />
                 <div className={styles.markButtons}>
                   <Button variant="failed" onClick={() => handleMarkQuestion('failed')}>Failed</Button>
                   <Button variant="unsure" onClick={() => handleMarkQuestion('unsure')}>Unsure</Button>
