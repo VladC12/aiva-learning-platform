@@ -52,6 +52,28 @@ export default function Home() {
         
         setFilterOptions(filtersObj);
         
+        // Set default values for filters with only one option
+        if (filtersObj.education_board && filtersObj.education_board.content.length === 1) {
+          setFilters(prev => ({
+            ...prev,
+            education_board: filtersObj.education_board.content[0]
+          }));
+        }
+        
+        if (filtersObj.class && filtersObj.class.content.length === 1) {
+          setFilters(prev => ({
+            ...prev,
+            class: filtersObj.class.content[0]
+          }));
+        }
+        
+        if (filtersObj.subject && filtersObj.subject.content.length === 1) {
+          setFilters(prev => ({
+            ...prev,
+            subject: filtersObj.subject.content[0]
+          }));
+        }
+        
         // Set default difficulty levels if available
         if (filtersObj.difficulty_level) {
           setFilters(prev => ({
@@ -108,7 +130,8 @@ export default function Home() {
             <Dropdown
               label={filterOptions.education_board?.label || "Education Board"}
               value={filters.education_board}
-              onChange={(value) => setFilters(prev => ({ ...prev, education_board: value }))}
+              // onChange={(value) => setFilters(prev => ({ ...prev, education_board: value }))}
+              onChange={(value) => setFilters(prev => prev)}
               options={filterOptions.education_board?.content.map(item => ({
                 value: item,
                 label: item
@@ -120,7 +143,8 @@ export default function Home() {
             <Dropdown
               label={filterOptions.class?.label || "Class"}
               value={filters.class}
-              onChange={(value) => setFilters(prev => ({ ...prev, class: value }))}
+              onChange={(value) => setFilters(prev => prev)}
+              // onChange={(value) => setFilters(prev => ({ ...prev, class: value }))}
               options={filterOptions.class?.content.map(item => ({
                 value: item,
                 label: item
@@ -132,13 +156,13 @@ export default function Home() {
             <Dropdown
               label={filterOptions.subject?.label || "Subject"}
               value={filters.subject}
-              onChange={(value) => {
-                setFilters(prev => ({
-                  ...prev,
-                  subject: value,
-                  topic: []
-                }));
-              }}
+              // onChange={(value) => {
+              //   setFilters(prev => ({
+              //     ...prev,
+              //     subject: value
+              //   }));
+              // }}
+              onChange={(value) => setFilters(prev => prev)}
               options={filterOptions.subject?.content.map(item => ({
                 value: item,
                 label: item
