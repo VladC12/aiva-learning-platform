@@ -9,19 +9,12 @@ export default function QuestionsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
         // First try to fetch from protected endpoint
         let response = await fetch(`${window.location.origin}/api/questions`);
-
-        // If unauthorized, fetch from demo endpoint
-        if (response.status === 401) {
-          setIsDemo(true);
-          response = await fetch(`${window.location.origin}/api/demo-questions`);
-        }
 
         if (!response.ok) {
           throw new Error('Failed to fetch questions');
@@ -54,14 +47,6 @@ export default function QuestionsPage() {
 
   return (
     <div className={styles.questionsWrapper}>
-      {isDemo && (
-        <div className={styles.demoHeader}>
-          <h2>Demo Mode - Limited to 5 Questions</h2>
-          <Button onClick={() => window.location.href = '/auth/signup'} variant='large'>
-            Sign Up for Full Access
-          </Button>
-        </div>
-      )}
       <QuestionsContent questions={questions} />
     </div>
   );
