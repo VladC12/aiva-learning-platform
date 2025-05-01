@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
 
-const protectedRoutes = ['/', '/api/questions'];
+const protectedRoutes = ['/', '/api/questions', '/questions'];
 const authRoutes = ['/auth/login', '/auth/signup'];
 const publicApiRoutes = [
   '/api/auth/login',
@@ -32,11 +32,6 @@ export function middleware(request: NextRequest) {
 
   // If trying to access other protected routes without token
   if (protectedRoutes.includes(pathname) && !token) {
-    if (pathname == "/"){
-      const demoUrl = new URL('/questions', request.url);
-      return NextResponse.redirect(demoUrl);
-    }
-
     const loginUrl = new URL('/auth/login', request.url);
     return NextResponse.redirect(loginUrl);
   }

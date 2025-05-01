@@ -7,13 +7,9 @@ export default function Navbar() {
     <nav className={styles.navbar}>
       <div className={styles.container}>
         <div className={styles.brand}>
-          <Link href="/">Learning Platform</Link>
+          <Link href="/">DPS Society</Link>
         </div>
-
         <div className={styles.navContent}>
-          <div className={styles.links}>
-            <Link href="/questions">Questions</Link>
-          </div>
           <div className={styles.userSection}>
             <ProfileDropdown />
           </div>
