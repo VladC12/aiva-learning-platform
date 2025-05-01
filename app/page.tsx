@@ -6,132 +6,173 @@ import MultiSelect from './components/MultiSelect';
 import Dropdown from './components/Dropdown';
 import QuestionList from './components/QuestionList';
 
-interface FilterState {
-    curriculum: string;
-    class: string;
-    subject: string;
-    topics: string[];
-    difficulties: string[];
+interface FilterOption {
+  _id: string;
+  content: string[];
+  label: string;
+  key: string;
 }
 
-const subjectTopicsMap: { [key: string]: string[] } = {
-    Mathematics: ['Algebra', 'Geometry', 'Calculus', 'Statistics', 'Trigonometry'],
-    Physics: ['Mechanics', 'Thermodynamics', 'Optics', 'Electricity', 'Modern Physics'],
-    Chemistry: ['Organic', 'Inorganic', 'Physical', 'Analytical', 'Biochemistry'],
-    Biology: ['Botany', 'Zoology', 'Genetics', 'Ecology', 'Physiology']
-};
-
-const difficultyLevels = ['Easy', 'Medium', 'Hard'];
-
+interface FilterState {
+  education_board: string;
+  class: string;
+  subject: string;
+  topic: string[];
+  difficulty_level: string[];
+}
 
 export default function Home() {
-    const router = useRouter();
-    const [filters, setFilters] = useState<FilterState>({
-        curriculum: '',
-        class: '',
-        subject: '',
-        topics: [],
-        difficulties: difficultyLevels // Default to all difficulties
-    });
+  const router = useRouter();
+  const [filterOptions, setFilterOptions] = useState<Record<string, FilterOption>>({});
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  
+  const [filters, setFilters] = useState<FilterState>({
+    education_board: '',
+    class: '',
+    subject: '',
+    topic: [],
+    difficulty_level: []
+  });
 
-    useEffect(() => { }, [])
-
-    const handleTopicsChange = (selected: string[]) => {
-        setFilters(prev => ({
-            ...prev,
-            topics: selected
-        }));
-    };
-
-    const handleDifficultiesChange = (selected: string[]) => {
-        setFilters(prev => ({
-            ...prev,
-            difficulties: selected
-        }));
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const params = new URLSearchParams({
-            ...filters,
-            topics: filters.topics.join(','),
-            difficulties: filters.difficulties.join(',')
+  useEffect(() => {
+    const fetchFilters = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/filters');
+        if (!response.ok) {
+          throw new Error('Failed to fetch filters');
+        }
+        const data = await response.json();
+        
+        // Convert array to an object with keys for easier access
+        const filtersObj: Record<string, FilterOption> = {};
+        data.forEach((filter: FilterOption) => {
+          filtersObj[filter.key] = filter;
         });
-        router.push(`/questions?${params.toString()}`);
+        
+        setFilterOptions(filtersObj);
+        
+        // Set default difficulty levels if available
+        if (filtersObj.difficulty_level) {
+          setFilters(prev => ({
+            ...prev,
+            difficulty_level: filtersObj.difficulty_level.content
+          }));
+        }
+      } catch (error) {
+        console.error("Error fetching filters:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    return (
-        <main className={styles.main}>
-            <h1>Question Bank</h1>
-            <form onSubmit={handleSubmit} className={styles.filterForm}>
-                <div className={styles.filterGrid}>
-                    <div className={styles.filterItem}>
-                        <Dropdown
-                            label="Education Board"
-                            value={filters.curriculum}
-                            onChange={(value) => setFilters(prev => ({ ...prev, curriculum: value }))}
-                            options={[
-                                { value: "CBSE", label: "CBSE" }
-                            ]}
-                            placeholder="Select Curriculum"
-                        />
-                    </div>
-                    <div className={styles.filterItem}>
-                        <Dropdown
-                            label="Class"
-                            value={filters.curriculum}
-                            onChange={(value) => setFilters(prev => ({ ...prev, curriculum: value }))}
-                            options={[
-                                { value: "XII", label: "XII" }
-                            ]}
-                            placeholder="Select Class"
-                        />
-                    </div>
-                    <div className={styles.filterItem}>
-                        <Dropdown
-                            label="Subject"
-                            value={filters.subject}
-                            onChange={(value) => {
-                                setFilters(prev => ({
-                                    ...prev,
-                                    subject: value,
-                                    topics: []
-                                }));
-                            }}
-                            options={Object.keys(subjectTopicsMap).map(subject => ({
-                                value: subject,
-                                label: subject
-                            }))}
-                            placeholder="Select Subject"
-                        />
-                    </div>
+    fetchFilters();
+  }, []);
 
-                    <div className={styles.filterItem}>
-                        <label htmlFor="topics">Topics</label>
-                        <MultiSelect
-                            options={filters.subject ? subjectTopicsMap[filters.subject] : []}
-                            value={filters.topics}
-                            onChange={handleTopicsChange}
-                            placeholder="Select topics"
-                        />
-                    </div>
+  const handleTopicsChange = (selected: string[]) => {
+    setFilters(prev => ({
+      ...prev,
+      topic: selected
+    }));
+  };
 
-                    <div className={styles.filterItem}>
-                        <label htmlFor="difficulties">Difficulty</label>
-                        <MultiSelect
-                            options={difficultyLevels}
-                            value={filters.difficulties}
-                            onChange={handleDifficultiesChange}
-                            placeholder="Select difficulty levels"
-                        />
-                    </div>
-                </div>
+  const handleDifficultiesChange = (selected: string[]) => {
+    setFilters(prev => ({
+      ...prev,
+      difficulty_level: selected
+    }));
+  };
 
-                <button type="submit" className={styles.generateButton}>
-                    Generate Questions
-                </button>
-            </form>
-            <QuestionList />
-        </main>
-    );
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams({
+      education_board: filters.education_board,
+      class: filters.class,
+      subject: filters.subject,
+      topic: filters.topic.join(','),
+      difficulty_level: filters.difficulty_level.join(',')
+    });
+    router.push(`/questions?${params.toString()}`);
+  };
+
+  if (isLoading) {
+    return <div className={styles.loading}>Loading filters...</div>;
+  }
+
+  return (
+    <main className={styles.main}>
+      <h1>Question Bank</h1>
+      <form onSubmit={handleSubmit} className={styles.filterForm}>
+        <div className={styles.filterGrid}>
+          <div className={styles.filterItem}>
+            <Dropdown
+              label={filterOptions.education_board?.label || "Education Board"}
+              value={filters.education_board}
+              onChange={(value) => setFilters(prev => ({ ...prev, education_board: value }))}
+              options={filterOptions.education_board?.content.map(item => ({
+                value: item,
+                label: item
+              })) || []}
+              placeholder="Select Education Board"
+            />
+          </div>
+          <div className={styles.filterItem}>
+            <Dropdown
+              label={filterOptions.class?.label || "Class"}
+              value={filters.class}
+              onChange={(value) => setFilters(prev => ({ ...prev, class: value }))}
+              options={filterOptions.class?.content.map(item => ({
+                value: item,
+                label: item
+              })) || []}
+              placeholder="Select Class"
+            />
+          </div>
+          <div className={styles.filterItem}>
+            <Dropdown
+              label={filterOptions.subject?.label || "Subject"}
+              value={filters.subject}
+              onChange={(value) => {
+                setFilters(prev => ({
+                  ...prev,
+                  subject: value,
+                  topic: []
+                }));
+              }}
+              options={filterOptions.subject?.content.map(item => ({
+                value: item,
+                label: item
+              })) || []}
+              placeholder="Select Subject"
+            />
+          </div>
+
+          <div className={styles.filterItem}>
+            <label htmlFor="topics">{filterOptions.topic?.label || "Topics"}</label>
+            <MultiSelect
+              options={filterOptions.topic?.content || []}
+              value={filters.topic}
+              onChange={handleTopicsChange}
+              placeholder="Select topics"
+            />
+          </div>
+
+          <div className={styles.filterItem}>
+            <label htmlFor="difficulties">{filterOptions.difficulty_level?.label || "Difficulty"}</label>
+            <MultiSelect
+              options={filterOptions.difficulty_level?.content || []}
+              value={filters.difficulty_level}
+              onChange={handleDifficultiesChange}
+              placeholder="Select difficulty levels"
+            />
+          </div>
+        </div>
+
+        <button type="submit" className={styles.generateButton}>
+          Generate Questions
+        </button>
+      </form>
+      <QuestionList />
+    </main>
+  );
 }
