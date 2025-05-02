@@ -131,7 +131,7 @@ export default function Home() {
               label={filterOptions.education_board?.label || "Education Board"}
               value={filters.education_board}
               // onChange={(value) => setFilters(prev => ({ ...prev, education_board: value }))}
-              onChange={(value) => setFilters(prev => prev)}
+              onChange={(_value) => setFilters(prev => prev)}
               options={filterOptions.education_board?.content.map(item => ({
                 value: item,
                 label: item
@@ -143,7 +143,7 @@ export default function Home() {
             <Dropdown
               label={filterOptions.class?.label || "Class"}
               value={filters.class}
-              onChange={(value) => setFilters(prev => prev)}
+              onChange={(_value) => setFilters(prev => prev)}
               // onChange={(value) => setFilters(prev => ({ ...prev, class: value }))}
               options={filterOptions.class?.content.map(item => ({
                 value: item,
@@ -162,7 +162,7 @@ export default function Home() {
               //     subject: value
               //   }));
               // }}
-              onChange={(value) => setFilters(prev => prev)}
+              onChange={(_value) => setFilters(prev => prev)}
               options={filterOptions.subject?.content.map(item => ({
                 value: item,
                 label: item
