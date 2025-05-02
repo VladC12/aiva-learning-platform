@@ -30,6 +30,7 @@ export async function POST(request: Request) {
     try {
       jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     } catch (error) {
+      console.error('Token verification error:', error);
       return NextResponse.json(
         { error: 'Invalid token' },
         { status: 400 }

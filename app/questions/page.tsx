@@ -1,12 +1,24 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Button from '../components/Button';
 import styles from './page.module.css';
 import { Question } from '@/models/Question';
 import MarkdownMathRenderer from 'app/components/MarkdownMathRenderer';
 
+// Main page component that uses Suspense boundary
 export default function QuestionsPage() {
+  return (
+    <div className={styles.questionsWrapper}>
+      <Suspense fallback={<div>Loading questions...</div>}>
+        <QuestionsContent />
+      </Suspense>
+    </div>
+  );
+}
+
+// Extracted component that uses useSearchParams
+function QuestionsContent() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,86 +83,81 @@ export default function QuestionsPage() {
     return <div>No questions found</div>;
   }
 
+  return <QuestionDisplay questions={questions} />;
+}
+
+// Component that shows the actual questions and UI
+function QuestionDisplay({ questions }: { questions: Question[] }) {
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [showSolution, setShowSolution] = useState(false);
+  const currentQuestion = questions[currentQuestionIndex];
+
+  const getDifficultyClass = (difficulty: string) => {
+    const firstWord = difficulty.split(' ')[0].toLowerCase();
+    return `difficulty-${firstWord}`;
+  };
+
+  const handlePrev = () => {
+    setCurrentQuestionIndex((prev: number) => Math.max(0, prev - 1));
+    setShowSolution(false);
+  };
+
+  const handleNext = () => {
+    setCurrentQuestionIndex((prev: number) => Math.min(questions.length - 1, prev + 1));
+    setShowSolution(false);
+  };
+
+  const handleMarkQuestion = (_status: string) => {
+    // TODO: Implement question status tracking
+    handleNext();
+  };
+
   return (
-    <div className={styles.questionsWrapper}>
-      <QuestionsContent questions={questions} />
-    </div>
-  );
+    <div className={styles.container}>
+      <div className={styles.sidebar}>
+        <div className={styles.questionCount}>
+          Question: {`${currentQuestionIndex + 1} / ${questions.length}`}
+        </div>
+        <div className={styles.information}>
+          <div><strong>Education Board:</strong> {currentQuestion.education_board}</div>
+          <div><strong>Class:</strong> {currentQuestion.class}</div>
+          <div><strong>Topic:</strong> {currentQuestion.topic}</div>
+          <div><strong>Subject:</strong> {currentQuestion.subject}</div>
+          <div><strong>Difficulty:</strong> <span className={`${styles.difficulty} ${styles[getDifficultyClass(currentQuestion.difficulty_level)]}`}>
+            {currentQuestion.difficulty_level}
+          </span></div>
+        </div>
+      </div>
 
-
-  function QuestionsContent({ questions }: { questions: Question[] }) {
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [showSolution, setShowSolution] = useState(false);
-    const currentQuestion = questions[currentQuestionIndex];
-
-    const getDifficultyClass = (difficulty: string) => {
-      const firstWord = difficulty.split(' ')[0].toLowerCase();
-      console.log(`difficulty-${firstWord} vs ${difficulty}`)
-      return `difficulty-${firstWord}`;
-    };
-
-    const handlePrev = () => {
-      setCurrentQuestionIndex((prev: number) => Math.max(0, prev - 1));
-      setShowSolution(false);
-    };
-
-    const handleNext = () => {
-      setCurrentQuestionIndex((prev: number) => Math.min(questions.length - 1, prev + 1));
-      setShowSolution(false);
-    };
-
-    const handleMarkQuestion = (status: string) => {
-      // TODO: Implement question status tracking
-      handleNext();
-    };
-
-    return (
-      <div className={styles.container}>
-        <div className={styles.sidebar}>
-          <div className={styles.questionCount}>
-            Question: {`${currentQuestionIndex + 1} / ${questions.length}`}
+      <div className={styles.mainContent}>
+        <div className={styles.questionArea}>
+          <div className={styles.questionContent}>
+            <br />
+            <MarkdownMathRenderer content={currentQuestion.question} />
           </div>
-          <div className={styles.information}>
-            <div><strong>Education Board:</strong> {currentQuestion.education_board}</div>
-            <div><strong>Class:</strong> {currentQuestion.class}</div>
-            <div><strong>Topic:</strong> {currentQuestion.topic}</div>
-            <div><strong>Subject:</strong> {currentQuestion.subject}</div>
-            <div><strong>Difficulty:</strong> <span className={`${styles.difficulty} ${styles[getDifficultyClass(currentQuestion.difficulty_level)]}`}>
-              {currentQuestion.difficulty_level}
-            </span></div>
-          </div>
+
+          {showSolution && (
+            <div className={styles.solution}>
+              <MarkdownMathRenderer content={currentQuestion.solution} />
+              <div className={styles.markButtons}>
+                <Button variant="failed" onClick={() => handleMarkQuestion('failed')}>Failed</Button>
+                <Button variant="unsure" onClick={() => handleMarkQuestion('unsure')}>Unsure</Button>
+                <Button variant="success" onClick={() => handleMarkQuestion('success')}>Success</Button>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className={styles.mainContent}>
-          <div className={styles.questionArea}>
-            <div className={styles.questionContent}>
-              <br />
-              <MarkdownMathRenderer content={currentQuestion.question} />
-            </div>
-
-            {showSolution && (
-              <div className={styles.solution}>
-                <MarkdownMathRenderer content={currentQuestion.solution} />
-                <div className={styles.markButtons}>
-                  <Button variant="failed" onClick={() => handleMarkQuestion('failed')}>Failed</Button>
-                  <Button variant="unsure" onClick={() => handleMarkQuestion('unsure')}>Unsure</Button>
-                  <Button variant="success" onClick={() => handleMarkQuestion('success')}>Success</Button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className={styles.navigation}>
-            <div className={styles.buttonGroup}>
-              <Button onClick={handlePrev} disabled={currentQuestionIndex === 0}>Prev</Button>
-              <Button onClick={() => setShowSolution(!showSolution)}>
-                {showSolution ? "Hide Solution" : "Show Solution"}
-              </Button>
-              <Button onClick={handleNext} disabled={currentQuestionIndex === questions.length - 1}>Next</Button>
-            </div>
+        <div className={styles.navigation}>
+          <div className={styles.buttonGroup}>
+            <Button onClick={handlePrev} disabled={currentQuestionIndex === 0}>Prev</Button>
+            <Button onClick={() => setShowSolution(!showSolution)}>
+              {showSolution ? "Hide Solution" : "Show Solution"}
+            </Button>
+            <Button onClick={handleNext} disabled={currentQuestionIndex === questions.length - 1}>Next</Button>
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 }
