@@ -45,8 +45,8 @@ export default function LoginPage() {
       });
       console.log('Set token good')
       router.push('/');
-    } catch (err: any) {
-      setError(err?.message || 'An unexpected error occurred');
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
     }
   };
 
@@ -63,7 +63,7 @@ export default function LoginPage() {
         <h1>Login</h1>
         <div className={styles.links}>
           <span>
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/auth/signup" className={styles.toggleLink}>
               Sign Up
             </Link>

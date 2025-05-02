@@ -1,11 +1,12 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 
-export default function ResetPasswordPage() {
+// Create a separate component that uses useSearchParams
+function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const router = useRouter();
@@ -40,8 +41,8 @@ export default function ResetPasswordPage() {
 
       setMessage('Password reset successfully! Redirecting to login...');
       setTimeout(() => router.push('/auth/login'), 3000);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     }
   };
 
@@ -91,5 +92,14 @@ export default function ResetPasswordPage() {
         </button>
       </form>
     </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className={styles.container}>Loading...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

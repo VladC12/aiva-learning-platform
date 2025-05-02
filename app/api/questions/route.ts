@@ -2,13 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { Question } from '@/models/Question';
 
+// Define a more specific type for the MongoDB query
+interface QuestionQuery {
+  education_board?: string;
+  class?: string;
+  subject?: string;
+  topic?: { $in: string[] };
+  difficulty_level?: { $in: string[] };
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Parse JSON body to get filter parameters
     const params = await request.json();
     
     // Build MongoDB query from parameters
-    const query: Record<string, any> = {};
+    const query: QuestionQuery = {};
     
     // Handle required single value parameters
     if (params.education_board) query.education_board = params.education_board;
