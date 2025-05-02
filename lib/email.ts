@@ -50,7 +50,7 @@ try {
 } catch (error) {
   console.error('Email configuration error:', error);
   // Allow the application to start, but email functionality will be disabled
-  transporter = null as any;
+  transporter = null as unknown as nodemailer.Transporter;
 }
 
 interface SendEmailOptions {
