@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import styles from './ProfileDropdown.module.css';
 
@@ -14,24 +14,24 @@ interface User {
 }
 
 export default function ProfileDropdown() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, _setUser] = useState<User | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await fetch('/api/auth/me');
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
-        }
-      } catch (error) {
-        console.error('Failed to fetch user data:', error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     try {
+  //       const response = await fetch('/api/auth/me');
+  //       if (response.ok) {
+  //         const userData = await response.json();
+  //         setUser(userData);
+  //       }
+  //     } catch (error) {
+  //       console.error('Failed to fetch user data:', error);
+  //     }
+  //   };
 
-    fetchUser();
-  }, []);
+  //   fetchUser();
+  // }, []);
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
