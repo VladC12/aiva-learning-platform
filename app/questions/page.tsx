@@ -99,7 +99,7 @@ export default function QuestionsPage() {
       setShowSolution(false);
     };
 
-    const handleMarkQuestion = (status: string) => {
+    const handleMarkQuestion = (_status: string) => {
       // TODO: Implement question status tracking
       handleNext();
     };
