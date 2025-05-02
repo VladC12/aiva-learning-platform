@@ -1,22 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './page.module.css';
 import Button from 'app/components/Button';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [formData, setFormData] = useState({
     email_address: '',
     password: ''
   });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -26,27 +26,40 @@ export default function LoginPage() {
         },
         body: JSON.stringify(formData),
       });
-      console.log('Login API good')
+      console.log('Login API good');
+      
+      // Get the response data
+      const data = await response.json();
+      
+      // Check if response was successful
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Login failed');
+        throw new Error(data.error || 'Login failed');
       }
 
-      console.log('Login response good')
-      const { token } = await response.json();
-      console.log('Token good')
-      // Set token as httpOnly cookie
-      await fetch('/api/auth/set-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token }),
-      });
-      console.log('Set token good')
-      router.push('/');
+      console.log('Login response good');
+      console.log('Token good');
+      
+      try {
+        // Set token as httpOnly cookie
+        await fetch('/api/auth/set-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ token: data.token }),
+        });
+        console.log('Set token good');
+        
+        // Simply use window.location for the most reliable navigation
+        window.location.href = '/';
+      } catch (cookieError) {
+        setError('Failed to set authentication. Please try again.');
+        console.error('Cookie setting error:', cookieError);
+      }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -86,6 +99,7 @@ export default function LoginPage() {
             value={formData.email_address}
             onChange={handleChange}
             required
+            autoComplete="email"
           />
         </div>
 
@@ -98,11 +112,19 @@ export default function LoginPage() {
             value={formData.password}
             onChange={handleChange}
             required
+            autoComplete="current-password"
           />
         </div>
 
-        <Button type="submit" variant="large">
-          Login
+        <Button type="submit" variant="large" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <span className={styles.spinner}></span>
+              Logging in...
+            </>
+          ) : (
+            'Login'
+          )}
         </Button>
       </form>
     </div>
