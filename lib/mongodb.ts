@@ -1,30 +1,52 @@
 import { MongoClient } from 'mongodb';
 
-declare global {
-  var _mongoClientPromise: Promise<MongoClient>;
-}
-
 const uri = process.env.MONGODB_URI;
-const options = {};
-
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
-
 if (!uri) {
   throw new Error('Please add your MongoDB URI to .env.local');
 }
 
-if (process.env.NODE_ENV === 'development') {
-  // Use a global variable to preserve the connection in development
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    global._mongoClientPromise = client.connect();
+const options = {};
+
+/**
+ * MongoDB Connection Manager - maintains a single connection across requests
+ */
+class MongoConnectionManager {
+  private static instance: MongoConnectionManager;
+  private client: MongoClient;
+  private clientPromise: Promise<MongoClient>;
+  private isConnecting: boolean = false;
+
+  private constructor() {
+    this.client = new MongoClient(uri, options);
+    this.clientPromise = this.client.connect();
+    this.isConnecting = true;
+
+    // Add cleanup on app termination
+    process.on('SIGINT', () => this.closeConnection());
+    process.on('SIGTERM', () => this.closeConnection());
   }
-  clientPromise = global._mongoClientPromise;
-} else {
-  // In production mode, create a new connection
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
+
+  public static getInstance(): MongoConnectionManager {
+    if (!MongoConnectionManager.instance) {
+      MongoConnectionManager.instance = new MongoConnectionManager();
+    }
+    return MongoConnectionManager.instance;
+  }
+
+  public getClient(): Promise<MongoClient> {
+    return this.clientPromise;
+  }
+
+  private async closeConnection(): Promise<void> {
+    if (this.isConnecting) {
+      const client = await this.clientPromise;
+      await client.close();
+      this.isConnecting = false;
+      console.log('MongoDB connection closed');
+    }
+  }
 }
 
+// Export a singleton instance of the MongoDB client
+const clientPromise: Promise<MongoClient> = MongoConnectionManager.getInstance().getClient();
 export default clientPromise;
