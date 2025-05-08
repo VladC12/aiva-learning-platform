@@ -10,10 +10,11 @@ const MarkdownMathRenderer = ({ content }: { content: string }) => {
   return (
     <div className={styles.wrapper}>
       <ReactMarkdown
-        children={content}
         remarkPlugins={[remarkMath]}
         rehypePlugins={[rehypeKatex]}
-      />
+      >
+        {content}
+      </ReactMarkdown>
     </div>
   );
 };
