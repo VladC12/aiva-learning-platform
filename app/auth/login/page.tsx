@@ -50,6 +50,18 @@ export default function LoginPage() {
         });
         console.log('Set token good');
         
+        // Update analytics based on user role
+        if (data.user && data.user.role) {
+          await fetch('/api/analytics/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ role: data.user.role }),
+          });
+          console.log('Analytics updated');
+        }
+        
         // Simply use window.location for the most reliable navigation
         window.location.href = '/';
       } catch (cookieError) {
