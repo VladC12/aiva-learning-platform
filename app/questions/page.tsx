@@ -29,8 +29,9 @@ function QuestionsContent() {
     // Check for required URL parameters
     const requiredParams = ['education_board', 'class', 'subject', 'topic', 'difficulty_level'];
     const missingParams = requiredParams.filter(param => !searchParams.has(param));
+    console.log(searchParams);
     
-    if (missingParams.length > 0) {
+    if (missingParams.length > 0 && searchParams.get('q') === null) {
       // Redirect to home page or a selection page if parameters are missing
       router.push('/');
       return;
@@ -38,28 +39,50 @@ function QuestionsContent() {
 
     const fetchQuestions = async () => {
       try {
-        // Build parameters object from search params
-        const paramObject: Record<string, string> = {};
-        requiredParams.forEach(param => {
-          const value = searchParams.get(param);
-          if (value) paramObject[param] = value;
-        });
-
-        // Use POST request instead of GET and send parameters in the body
-        const response = await fetch('/api/questions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(paramObject),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch questions');
+        // Check if we're loading a question set
+        const questionSetId = searchParams.get('q');
+        
+        if (questionSetId) {
+          // Handle question set loading
+          const response = await fetch('/api/question-set', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              q: questionSetId
+            }),
+          });
+    
+          if (!response.ok) {
+            throw new Error('Failed to fetch question set');
+          }
+    
+          const data = await response.json();
+          setQuestions(data);
+        } else {
+          // Build parameters object from search params for regular filtering
+          const paramObject: Record<string, string> = {};
+          requiredParams.forEach(param => {
+            const value = searchParams.get(param);
+            if (value) paramObject[param] = value;
+          });
+    
+          const response = await fetch('/api/questions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(paramObject),
+          });
+    
+          if (!response.ok) {
+            throw new Error('Failed to fetch questions');
+          }
+    
+          const data = await response.json();
+          setQuestions(data);
         }
-
-        const data = await response.json();
-        setQuestions(data);
       } catch (error) {
         console.error('Failed to fetch questions:', error);
         setError(error instanceof Error ? error.message : 'Failed to fetch questions');
