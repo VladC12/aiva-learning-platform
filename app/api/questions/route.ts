@@ -15,22 +15,22 @@ export async function POST(request: NextRequest) {
   try {
     // Parse JSON body to get filter parameters
     const params = await request.json();
-    
+
     // Build MongoDB query from parameters
     const query: QuestionQuery = {};
-    
+
     // Handle required single value parameters
     if (params.education_board) query.education_board = params.education_board;
     if (params.class) query.class = params.class;
     if (params.subject) query.subject = params.subject;
-    
+
     // Handle comma-separated topics with $in operator
     // If topic is missing or empty, don't filter by topic (include all topics)
     if (params.topic && params.topic.trim() !== '') {
       const topics = params.topic.split(',').map((t: string) => t.trim());
       query.topic = { $in: topics };
     }
-    
+
     // Handle comma-separated difficulty levels with $in operator
     // If difficulty_level is missing or empty, don't filter by difficulty (include all levels)
     if (params.difficulty_level && params.difficulty_level.trim() !== '') {
@@ -40,15 +40,13 @@ export async function POST(request: NextRequest) {
 
     const client = await clientPromise;
     const db = client.db();
-    
-    console.log('MongoDB query:', JSON.stringify(query));
 
     // Find questions matching the criteria, limit to 20 results
     const questions = await db.collection('Questions')
       .find(query)
       .limit(20)
       .toArray();
-    
+
     console.log(`Found ${questions.length} matching questions`);
 
     return NextResponse.json(questions as Question[]);
