@@ -34,9 +34,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Remove sensitive data
-    const { password, ...userData } = user;
+    const { password: _password, ...userData } = user;
     return NextResponse.json(userData);
   } catch (error) {
+    console.error('Error verifying token:', error);
     return NextResponse.json(
       { error: 'Invalid token' },
       { status: 401 }
