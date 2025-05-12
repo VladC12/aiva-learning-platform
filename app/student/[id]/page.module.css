@@ -1,0 +1,114 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  color: #333;
+}
+
+.header {
+  margin-bottom: 1rem;
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 1rem;
+}
+
+.backLink {
+  display: inline-block;
+  color: #2563eb;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.backLink:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  font-size: 1.1rem;
+  color: #6b7280;
+}
+
+.unauthorized, .notFound, .errorMessage {
+  max-width: 600px;
+  margin: 4rem auto;
+  padding: 2rem;
+  text-align: center;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.unauthorized h2, .notFound h2, .errorMessage h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #1f2937;
+}
+
+.unauthorized p, .notFound p, .errorMessage p {
+  color: #6b7280;
+  margin-bottom: 2rem;
+}
+
+.loginButton, .backButton, .retryButton {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  cursor: pointer;
+  border: none;
+  font-size: 1rem;
+}
+
+.loginButton {
+  background-color: #2563eb;
+  color: white;
+  margin-right: 1rem;
+}
+
+.loginButton:hover {
+  background-color: #1d4ed8;
+}
+
+.backButton {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.backButton:hover {
+  background-color: #e5e7eb;
+  color: #1f2937;
+}
+
+.retryButton {
+  background-color: #2563eb;
+  color: white;
+  margin-right: 1rem;
+}
+
+.retryButton:hover {
+  background-color: #1d4ed8;
+}
+
+.errorMessage {
+  border-left: 4px solid #dc2626;
+}
+
+.unauthorized {
+  border-left: 4px solid #f59e0b;
+}
+
+.notFound {
+  border-left: 4px solid #6b7280;
+}
