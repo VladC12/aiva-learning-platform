@@ -2,40 +2,21 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import styles from './ProfileDropdown.module.css';
-
-interface User {
-  username: string;
-  email_address: string;
-  first_name: string;
-  last_name: string;
-  education_board: string;
-  profile_picture?: string;
-}
+import { useUser } from '../../context/UserContext';
 
 export default function ProfileDropdown() {
-  const [user, _setUser] = useState<User | null>(null);
+  const { user, logout } = useUser();
   const [isOpen, setIsOpen] = useState(false);
 
-  // useEffect(() => {
-  //   const fetchUser = async () => {
-  //     try {
-  //       const response = await fetch('/api/auth/me');
-  //       if (response.ok) {
-  //         const userData = await response.json();
-  //         setUser(userData);
-  //       }
-  //     } catch (error) {
-  //       console.error('Failed to fetch user data:', error);
-  //     }
-  //   };
-
-  //   fetchUser();
-  // }, []);
-
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    window.location.href = '/auth/login';
+    await logout();
+  };
+
+  // Close dropdown when an item is clicked
+  const handleItemClick = () => {
+    setIsOpen(false);
   };
 
   return (
@@ -45,27 +26,39 @@ export default function ProfileDropdown() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <Image
-          src={user?.profile_picture || '/profile-placeholder.svg'}
+          src={'/profile-placeholder.svg'}
           alt="Profile"
           width={32}
           height={32}
           className={styles.profileImage}
         />
-        <span>{user ? `${user.first_name} ${user.last_name}` : 'Profile'}</span>
+        <span>
+          {user ? `${user.username || 'Profile'}` : 'Profile'}
+        </span>
       </button>
 
       {isOpen && (
         <div className={styles.dropdownMenu}>
           {user && (
             <div className={styles.userInfo}>
-              <p>{user.email_address}</p>
-              <p>{user.education_board}</p>
+              <Link href="/auth/me" className={styles.menuItem} onClick={handleItemClick}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                View Profile
+              </Link>
             </div>
           )}
           <button
             className={styles.logoutButton}
             onClick={handleLogout}
           >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
             Log Out
           </button>
         </div>

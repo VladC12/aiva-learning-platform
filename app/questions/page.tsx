@@ -5,6 +5,7 @@ import Button from '../components/Button';
 import styles from './page.module.css';
 import { Question } from '@/models/Question';
 import MarkdownMathRenderer from 'app/components/MarkdownMathRenderer';
+import { useUser } from 'context/UserContext';
 
 // Main page component that uses Suspense boundary
 export default function QuestionsPage() {
@@ -113,7 +114,9 @@ function QuestionsContent() {
 function QuestionDisplay({ questions }: { questions: Question[] }) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const currentQuestion = questions[currentQuestionIndex];
+  const { user } = useUser();
 
   const getDifficultyClass = (difficulty: string) => {
     const firstWord = difficulty.split(' ')[0].toLowerCase();
@@ -130,9 +133,36 @@ function QuestionDisplay({ questions }: { questions: Question[] }) {
     setShowSolution(false);
   };
 
-  const handleMarkQuestion = (_status: string) => {
-    // TODO: Implement question status tracking
-    handleNext();
+  const handleMarkQuestion = async (status: 'success' | 'failed' | 'unsure') => {
+    if (!user || !currentQuestion._id) {
+      console.error("User not logged in or question ID missing");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const response = await fetch('/api/track-student-questions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          questionId: currentQuestion._id.toString(),
+          status,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to track question status');
+      }
+
+      // Move to next question after tracking
+      handleNext();
+    } catch (error) {
+      console.error('Error tracking question:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -163,9 +193,27 @@ function QuestionDisplay({ questions }: { questions: Question[] }) {
             <div className={styles.solution}>
               <MarkdownMathRenderer content={currentQuestion.solution} />
               <div className={styles.markButtons}>
-                <Button variant="failed" onClick={() => handleMarkQuestion('failed')}>Failed</Button>
-                <Button variant="unsure" onClick={() => handleMarkQuestion('unsure')}>Unsure</Button>
-                <Button variant="success" onClick={() => handleMarkQuestion('success')}>Success</Button>
+                <Button 
+                  variant="failed" 
+                  onClick={() => handleMarkQuestion('failed')}
+                  disabled={isSubmitting}
+                >
+                  Failed
+                </Button>
+                <Button 
+                  variant="unsure" 
+                  onClick={() => handleMarkQuestion('unsure')}
+                  disabled={isSubmitting}
+                >
+                  Unsure
+                </Button>
+                <Button 
+                  variant="success" 
+                  onClick={() => handleMarkQuestion('success')}
+                  disabled={isSubmitting}
+                >
+                  Success
+                </Button>
               </div>
             </div>
           )}
