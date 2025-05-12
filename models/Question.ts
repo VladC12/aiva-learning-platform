@@ -1,5 +1,12 @@
 import { ObjectId } from 'mongodb';
 
+export interface TrackedQuestion {
+  question: Question | null;
+  status: 'success' | 'failed' | 'unsure';
+  timestamp: number;
+  attempts: number;
+}
+
 interface TextContent {
   type: 'text';
   content: string;

@@ -5,6 +5,7 @@ import styles from './page.module.css';
 import MultiSelect from './components/MultiSelect';
 import Dropdown from './components/Dropdown';
 import QuestionList from './components/QuestionList';
+import { useUser } from 'context/UserContext';
 
 interface FilterOption {
   _id: string;
@@ -23,6 +24,7 @@ interface FilterState {
 
 export default function Home() {
   const router = useRouter();
+  const { user, loading: userLoading } = useUser(); // Get user and loading state from context
   const [filterOptions, setFilterOptions] = useState<Record<string, FilterOption>>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
   
@@ -91,6 +93,13 @@ export default function Home() {
     fetchFilters();
   }, []);
 
+  // Add effect to redirect teachers to /auth/me
+  useEffect(() => {
+    if (!userLoading && user && user.type === 'teacher') {
+      router.push('/auth/me');
+    }
+  }, [user, userLoading, router]);
+
   const handleTopicsChange = (selected: string[]) => {
     setFilters(prev => ({
       ...prev,
@@ -117,8 +126,9 @@ export default function Home() {
     router.push(`/questions?${params.toString()}`);
   };
 
-  if (isLoading) {
-    return <div className={styles.loading}>Loading filters...</div>;
+  // Modified loading state to account for user loading
+  if (userLoading || isLoading) {
+    return <div className={styles.loading}>Loading...</div>;
   }
 
   return (
