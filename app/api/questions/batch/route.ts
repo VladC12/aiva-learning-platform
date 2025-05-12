@@ -43,6 +43,7 @@ export async function GET(request: Request) {
         subject: 1,
         topic: 1,
         question: 1,
+        solution: 1,
         difficulty_level: 1,
         class: 1
       })

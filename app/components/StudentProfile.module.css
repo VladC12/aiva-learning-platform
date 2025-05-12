@@ -197,3 +197,23 @@
   color: #6b7280;
   font-size: 1.1rem;
 }
+
+/* Button style */
+.viewQuestionButton {
+  background: none;
+  border: none;
+  color: #2563eb;
+  text-align: left;
+  font-size: inherit;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.viewQuestionButton:hover {
+  text-decoration: underline;
+}

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Question, TrackedQuestion } from '@/models/Question';
 import { UserData } from 'context/UserContext';
 import { useEffect, useState } from 'react';
+import QuestionModal from './QuestionModal';
 
 interface Props {
     user: UserData;
@@ -11,7 +12,9 @@ interface Props {
 const StudentProfile: React.FC<Props> = ({ user }) => {
     const [trackedQuestions, setTrackedQuestions] = useState<Record<string, TrackedQuestion>>({});
     const [loadingQuestions, setLoadingQuestions] = useState<boolean>(true);
-
+    const [showModal, setShowModal] = useState<boolean>(false);
+    const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+    
     useEffect(() => {
         // Only fetch question details if the user has question tracking data
         if (!user || !user._id || !user.question_tracking) {
@@ -37,7 +40,7 @@ const StudentProfile: React.FC<Props> = ({ user }) => {
                 }
 
                 const questionsData = await response.json();
-
+                
                 // Combine question details with tracking data
                 const trackedWithDetails: Record<string, TrackedQuestion> = {};
 
@@ -63,6 +66,17 @@ const StudentProfile: React.FC<Props> = ({ user }) => {
 
         fetchQuestionDetails();
     }, [user]);
+
+    const handleViewQuestion = (question: Question | null) => {
+        if (!question) return;
+        setSelectedQuestion(question);
+        setShowModal(true);
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+        setSelectedQuestion(null);
+    };
 
     return (
         <div className={styles.container}>
@@ -149,10 +163,12 @@ const StudentProfile: React.FC<Props> = ({ user }) => {
                                         {data.question?.subject || 'Unknown'}
                                     </div>
                                     <div className={styles.questionTitle}>
-                                        <Link href={`/questions?id=${id}`} className={styles.questionLink}>
-                                            {data.question?.question.substring(0, 100) || 'Question not found'}
-                                            {(data.question?.question.length || 0) > 100 && '...'}
-                                        </Link>
+                                        <button 
+                                            className={styles.viewQuestionButton} 
+                                            onClick={() => handleViewQuestion(data.question)}
+                                        >
+                                          View Question
+                                        </button>
                                     </div>
                                     <div className={`${styles.questionStatus} ${styles[`status${data.status}`]}`}>
                                         {data.status.charAt(0).toUpperCase() + data.status.slice(1)}
@@ -175,6 +191,14 @@ const StudentProfile: React.FC<Props> = ({ user }) => {
                     </div>
                 )}
             </div>
+
+            {selectedQuestion && (
+                <QuestionModal 
+                    question={selectedQuestion} 
+                    isOpen={showModal} 
+                    onClose={closeModal} 
+                />
+            )}
         </div>
     );
 }
