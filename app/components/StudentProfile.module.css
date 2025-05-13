@@ -217,3 +217,40 @@
 .viewQuestionButton:hover {
   text-decoration: underline;
 }
+
+.paginationControls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 15px;
+}
+
+.paginationButton {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background-color: #357abf;
+}
+
+.paginationButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.pageInfo {
+  font-size: 14px;
+  color: #666;
+}
+
+.pdfItem {
+  background-color: rgba(138, 43, 226, 0.05);
+}
