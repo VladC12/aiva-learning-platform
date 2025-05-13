@@ -15,7 +15,7 @@
     overflow-x: auto;
     padding-bottom: 0.5rem;
     width: 100%;
-    justify-content: space-between;
+    /* justify-content: space-evenly; */
 }
 
 .questionSet {
@@ -76,4 +76,10 @@
 
 .listContainer::-webkit-scrollbar-thumb:hover {
     background: #9ca3af;
+}
+
+.pdfSet {
+    background-color: #8a2be2;
+    padding: 0.1rem 0.2rem;
+    /* Different color for PDF sets */
 }
