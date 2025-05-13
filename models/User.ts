@@ -7,6 +7,7 @@ interface QuestionStatus {
   status: 'success' | 'failed' | 'unsure';
   timestamp: number;
   attempts?: number;
+  isPdfQuestionSet?: boolean; // Flag to indicate if the question is from a PDF question set
 }
 
 interface QuestionTracking {
@@ -92,33 +93,34 @@ class UserModel {
   }
 
 
-  // New method for tracking question status
-  async trackQuestion(userId: string, questionId: string, status: 'success' | 'failed' | 'unsure') {
-    const questionStatus: QuestionStatus = {
-      status,
-      timestamp: Date.now()
-    };
-
-    // Find the user to check if they have existing tracking data for this question
-    const user = await this.findUserById(userId);
-
-    if (user?.question_tracking?.[questionId]) {
-      // Increment attempts if the question has been attempted before
-      questionStatus.attempts = (user.question_tracking[questionId].attempts || 1) + 1;
-    } else {
-      // First attempt
-      questionStatus.attempts = 1;
+  async trackQuestion(userId: string, questionId: string, status: 'success' | 'failed' | 'unsure', isPdfQuestionSet: boolean = false) {
+    const now = new Date();
+    
+    // Find the user first
+    const user = await this.collection.findOne({ _id: new ObjectId(userId) });
+    if (!user) throw new Error('User not found');
+    
+    // Initialize question_tracking if it doesn't exist
+    if (!user.question_tracking) {
+      user.question_tracking = {};
     }
-
-    // Update the question tracking field
-    return this.collection.updateOne(
+    
+    // Update or create tracking entry
+    const existing = user.question_tracking[questionId];
+    user.question_tracking[questionId] = {
+      status,
+      timestamp: now.getTime(),
+      attempts: existing ? (existing.attempts || 1) + 1 : 1,
+      isPdfQuestionSet
+    };
+    
+    // Update the user document
+    await this.collection.updateOne(
       { _id: new ObjectId(userId) },
-      {
-        $set: {
-          [`question_tracking.${questionId}`]: questionStatus
-        }
-      }
+      { $set: { question_tracking: user.question_tracking } }
     );
+    
+    return true;
   }
 
   // Get all tracked questions for a user

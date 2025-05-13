@@ -6,6 +6,8 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const ids = searchParams.get('ids');
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '10', 10);
     
     if (!ids) {
       return NextResponse.json(
@@ -32,12 +34,19 @@ export async function GET(request: Request) {
     }).filter(id => id !== null);
     
     if (objectIds.length === 0) {
-      return NextResponse.json({ questions: [] });
+      return NextResponse.json({ questions: [], total: 0, page, limit });
     }
     
-    // Fetch all questions by their IDs
+    // Get total count for pagination
+    const total = objectIds.length;
+    
+    // Calculate pagination slice for IDs
+    const startIndex = (page - 1) * limit;
+    const paginatedIds = objectIds.slice(startIndex, startIndex + limit);
+    
+    // Fetch paginated questions by their IDs
     const questions = await questionsCollection
-      .find({ _id: { $in: objectIds } })
+      .find({ _id: { $in: paginatedIds } })
       .project({
         _id: 1,
         subject: 1,
@@ -49,7 +58,13 @@ export async function GET(request: Request) {
       })
       .toArray();
     
-    return NextResponse.json({ questions });
+    return NextResponse.json({ 
+      questions,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    });
   } catch (error) {
     console.error('Error fetching questions batch:', error);
     return NextResponse.json(

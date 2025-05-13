@@ -19,10 +19,22 @@ interface Room {
   students: Student[];
 }
 
+interface PaginationInfo {
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 const TeacherProfile: React.FC<Props> = ({user}) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [room, setRoom] = useState<Room | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    page: 1,
+    limit: 10,
+    totalPages: 1
+  });
+  const [displayedStudents, setDisplayedStudents] = useState<Student[]>([]);
 
   useEffect(() => {
     const fetchRoomData = async () => {
@@ -40,6 +52,10 @@ const TeacherProfile: React.FC<Props> = ({user}) => {
 
         const data = await response.json();
         setRoom(data.room);
+
+        // Calculate total pages
+        const totalPages = Math.ceil(data.room.students.length / pagination.limit);
+        setPagination(prev => ({ ...prev, totalPages }));
       } catch (error) {
         console.error('Error fetching room data:', error);
         setError('Failed to load student data. Please try again later.');
@@ -49,7 +65,24 @@ const TeacherProfile: React.FC<Props> = ({user}) => {
     };
 
     fetchRoomData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // Update displayed students when pagination or room data changes
+  useEffect(() => {
+    if (room?.students) {
+      const startIndex = (pagination.page - 1) * pagination.limit;
+      const endIndex = startIndex + pagination.limit;
+      setDisplayedStudents(room.students.slice(startIndex, endIndex));
+    }
+  }, [pagination.page, pagination.limit, room?.students]);
+
+  const handlePageChange = (newPage: number) => {
+    setPagination(prev => ({
+      ...prev,
+      page: newPage
+    }));
+  };
 
   return (
     <div className={styles.container}>
@@ -134,39 +167,62 @@ const TeacherProfile: React.FC<Props> = ({user}) => {
             <p>No students in this classroom yet.</p>
           </div>
         ) : (
-          <div className={styles.studentsTable}>
-            <div className={styles.tableHeader}>
-              <div className={styles.nameColumn}>Student Name</div>
-              <div className={styles.statsColumn}>Questions Attempted</div>
-              <div className={styles.statsColumn}>Success</div>
-              <div className={styles.statsColumn}>Failed</div>
-              <div className={styles.statsColumn}>Unsure</div>
-              <div className={styles.actionsColumn}>Actions</div>
+          <>
+            <div className={styles.studentsTable}>
+              <div className={styles.tableHeader}>
+                <div className={styles.nameColumn}>Student Name</div>
+                <div className={styles.statsColumn}>Questions Attempted</div>
+                <div className={styles.statsColumn}>Success</div>
+                <div className={styles.statsColumn}>Failed</div>
+                <div className={styles.statsColumn}>Unsure</div>
+                <div className={styles.actionsColumn}>Actions</div>
+              </div>
+              
+              {displayedStudents.map((student) => (
+                <div key={student._id} className={styles.studentRow}>
+                  <div className={styles.nameColumn}>
+                    {student.first_name} {student.last_name}
+                  </div>
+                  <div className={styles.statsColumn}>{student.totalQuestions || 0}</div>
+                  <div className={styles.statsColumn}>
+                    <span className={styles.successText}>{student.successQuestions || 0}</span>
+                  </div>
+                  <div className={styles.statsColumn}>
+                    <span className={styles.failedText}>{student.failedQuestions || 0}</span>
+                  </div>
+                  <div className={styles.statsColumn}>
+                    <span className={styles.unsureText}>{student.unsureQuestions || 0}</span>
+                  </div>
+                  <div className={styles.actionsColumn}>
+                    <Link href={`/student/${student._id}`} className={styles.viewButton}>
+                      View Details
+                    </Link>
+                  </div>
+                </div>
+              ))}
             </div>
             
-            {room.students.map((student) => (
-              <div key={student._id} className={styles.studentRow}>
-                <div className={styles.nameColumn}>
-                  {student.first_name} {student.last_name}
-                </div>
-                <div className={styles.statsColumn}>{student.totalQuestions || 0}</div>
-                <div className={styles.statsColumn}>
-                  <span className={styles.successText}>{student.successQuestions || 0}</span>
-                </div>
-                <div className={styles.statsColumn}>
-                  <span className={styles.failedText}>{student.failedQuestions || 0}</span>
-                </div>
-                <div className={styles.statsColumn}>
-                  <span className={styles.unsureText}>{student.unsureQuestions || 0}</span>
-                </div>
-                <div className={styles.actionsColumn}>
-                  <Link href={`/student/${student._id}`} className={styles.viewButton}>
-                    View Details
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
+            {/* Pagination controls */}
+            <div className={styles.paginationControls}>
+              <button 
+                className={styles.paginationButton}
+                disabled={pagination.page <= 1}
+                onClick={() => handlePageChange(pagination.page - 1)}
+              >
+                Previous
+              </button>
+              <span className={styles.pageInfo}>
+                Page {pagination.page} of {pagination.totalPages}
+              </span>
+              <button 
+                className={styles.paginationButton}
+                disabled={pagination.page >= pagination.totalPages}
+                onClick={() => handlePageChange(pagination.page + 1)}
+              >
+                Next
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>
