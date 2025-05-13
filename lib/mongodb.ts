@@ -42,7 +42,6 @@ class MongoConnectionManager {
       const client = await this.clientPromise;
       await client.close();
       this.isConnecting = false;
-      console.log('MongoDB connection closed');
     }
   }
 }
