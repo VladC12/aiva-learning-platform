@@ -5,6 +5,7 @@ export interface TrackedQuestion {
   status: 'success' | 'failed' | 'unsure';
   timestamp: number;
   attempts: number;
+  isPdfQuestionSet?: boolean;
 }
 
 interface TextContent {
@@ -26,12 +27,17 @@ interface ListContent {
 type ContentPart = TextContent | MathContent | ListContent;
 
 export interface Question {
-  _id: ObjectId;
-  difficulty_level: string;
-  education_board: string;
-  class: string;
-  topic: string;
+  _id: string | ObjectId;
   subject: string;
+  topic: string;
   question: string;
   solution: string;
+  difficulty_level: string;
+  class: string;
+  education_board?: string;
+  // For PDF question sets
+  question_pdf_blob?: string;
+  solution_pdf_blob?: string;
+  label?: string;
+  // Add any other fields used in your application
 }
