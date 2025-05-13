@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     // Parse request body
     const body = await req.json();
-    const { questionId, status } = body;
+    const { questionId, status, isPdfQuestionSet = false } = body;
 
     // Validate required fields
     if (!questionId || !status || !['success', 'failed', 'unsure'].includes(status)) {
@@ -43,8 +43,8 @@ export async function POST(req: Request) {
     const db = client.db();
     const userModel = new UserModel(db);
     
-    // Update the question tracking data
-    await userModel.trackQuestion(decoded.userId, questionId, status);
+    // Update the question tracking data with PDF flag
+    await userModel.trackQuestion(decoded.userId, questionId, status, isPdfQuestionSet);
     
     return NextResponse.json({ success: true });
   } catch (error) {
