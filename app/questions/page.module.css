@@ -251,3 +251,18 @@
   height: calc(100vh - 80px);
   overflow: hidden;
 }
+
+.pdfContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.pdfViewer {
+  flex: 1;
+  min-height: 500px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}

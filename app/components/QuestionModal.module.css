@@ -87,3 +87,43 @@
   overflow-x: auto;
   min-height: 300px;
 }
+
+.pdfModal {
+  width: 90%;
+  height: 90%;
+  max-width: 1200px;
+}
+
+.pdfContainer {
+  height: 75vh;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.pdfControls {
+  display: flex;
+  justify-content: center;
+  margin: 15px 0;
+  gap: 10px;
+}
+
+.pdfToggleButton {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.pdfToggleButton:hover {
+  background-color: #e0e0e0;
+}
+
+.pdfToggleButton.active {
+  background-color: #4a90e2;
+  color: white;
+  border-color: #4a90e2;
+}
