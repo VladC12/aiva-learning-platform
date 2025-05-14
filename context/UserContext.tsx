@@ -18,6 +18,7 @@ export interface UserData {
       status: 'success' | 'failed' | 'unsure';
       timestamp: number;
       attempts: number;
+      isPdfQuestionSet?: boolean;
     }
   };
   type?: 'student' | 'teacher';
