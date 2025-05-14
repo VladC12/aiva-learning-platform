@@ -22,19 +22,19 @@ interface PDFViewerProps {
     isDemo?: boolean;
 }
 
-const isPDFValid = (data: ArrayBuffer): boolean => {
+const isPDFValid = (data: ArrayBuffer): { ok: boolean, error: string } => {
     try {
         // Ensure we have enough data
         if (!data || data.byteLength < 5) {
             console.debug('[PDFViewer] Invalid PDF: Data too short', {
                 length: data?.byteLength
             });
-            return false;
+            return { ok: false, error: 'Data too short' };
         }
 
         // Check PDF magic number (%PDF-)
         const header = new Uint8Array(data.slice(0, 5));
-        
+
         // Log the actual header bytes and their ASCII representation
         const headerBytes = Array.from(header);
         const headerAscii = String.fromCharCode(...headerBytes);
@@ -47,7 +47,7 @@ const isPDFValid = (data: ArrayBuffer): boolean => {
 
         // Check if it's a valid PDF header
         const isValid = headerAscii === '%PDF-';
-        
+
         if (!isValid) {
             console.debug('[PDFViewer] Invalid PDF header:', {
                 expected: [0x25, 0x50, 0x44, 0x46, 0x2D],
@@ -55,28 +55,38 @@ const isPDFValid = (data: ArrayBuffer): boolean => {
             });
         }
 
-        return isValid;
+        return {ok: isValid, error: isValid ? '' : 'Invalid PDF header'};
     } catch (err) {
         console.error('[PDFViewer] PDF validation error:', err);
-        return false;
+        return { ok: false, error: 'Error validating PDF' };
     }
 };
 
-export default function PDFViewer({ file, scaleDefault =1.5, isDemo = false }: PDFViewerProps) {
+export default function PDFViewer({ file, scaleDefault = 1.5, isDemo = false }: PDFViewerProps) {
     const [pdfData, setPdfData] = useState<ArrayBuffer | null>(null);
     const [numPages, setNumPages] = useState<number>();
     const [pageNumber, setPageNumber] = useState(1);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [scale, setScale] = useState(scaleDefault);
+    const [isDownloading, setIsDownloading] = useState(false);
     const MIN_SCALE = 0.5;
     const MAX_SCALE = 3;
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Memoize the file object to prevent unnecessary rerenders
-    const memoizedFile = useMemo(() => 
+    const memoizedFile = useMemo(() =>
         pdfData ? { data: pdfData, cacheKey: file } : undefined
-    , [pdfData, file]);
+        , [pdfData, file]);
+
+    // Generate a user-friendly filename if not provided
+    const downloadFileName = useMemo(() => {
+        // Extract filename from blob path or use generic name
+        const blobName = file.split('/').pop();
+        if (blobName) return blobName.endsWith('.pdf') ? blobName : `${blobName}.pdf`;
+
+        return 'document.pdf';
+    }, [file]);
 
     // Memoize handlers
     const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
@@ -101,10 +111,98 @@ export default function PDFViewer({ file, scaleDefault =1.5, isDemo = false }: P
         if (!containerRef.current) return {};
         const containerWidth = containerRef.current.getBoundingClientRect().width;
         return {
-            right: containerRef.current.closest(`.${styles.solution}`) ? 
-                `${containerWidth/2 + 1}px` : '1rem'
+            right: containerRef.current.closest(`.${styles.solution}`) ?
+                `${containerWidth / 2 + 1}px` : '1rem'
         };
     }, []);
+
+    const handleDownload = useCallback(async () => {
+        // Add more detailed debug logs to diagnose the issue
+        console.debug('[PDFViewer] Download requested:', {
+            pdfDataExists: !!pdfData,
+            pdfDataType: pdfData ? typeof pdfData : 'null',
+            pdfDataByteLength: pdfData?.byteLength
+        });
+
+        if (!pdfData) {
+            console.error('[PDFViewer] No PDF data available for download');
+            alert('PDF data is not available. Try reloading the page.');
+            return;
+        }
+
+        if (isDownloading) {
+            console.warn('[PDFViewer] Download already in progress');
+            return;
+        }
+
+        try {
+            setIsDownloading(true);
+
+            // Log the PDF data details before validation
+            console.debug('[PDFViewer] Preparing to download PDF:', {
+                dataAvailable: !!pdfData,
+                byteLength: pdfData.byteLength,
+                isArrayBuffer: pdfData instanceof ArrayBuffer
+            });
+
+            if (!pdfData || pdfData.byteLength === 0) {
+                // Try to reload the PDF data if it's empty
+                if (file) {
+                    console.log('[PDFViewer] Attempting to reload PDF data before download');
+                    try {
+                        // Check cache first
+                        const cachedData = await pdfCache.get(file);
+                        if (cachedData && cachedData.byteLength > 0) {
+                            console.debug('[PDFViewer] Successfully retrieved data from cache for download');
+                            await downloadPDF(cachedData);
+                            return;
+                        }
+                    } catch (err) {
+                        console.error('[PDFViewer] Error retrieving from cache:', err);
+                    }
+                }
+                throw new Error('PDF data is empty or undefined');
+            }
+
+            await downloadPDF(pdfData);
+        } catch (err) {
+            console.error('[PDFViewer] Download error:', err);
+            alert('Failed to download PDF: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        } finally {
+            setIsDownloading(false);
+        }
+    }, [pdfData, isDownloading, file]); // Added file to dependencies
+
+    // Helper function to handle the actual PDF download
+    const downloadPDF = useCallback(async (data: ArrayBuffer) => {
+        const pdfValidation = isPDFValid(data);
+        if (!pdfValidation.ok) {
+            console.error('[PDFViewer] Invalid PDF data, cannot download: ', pdfValidation.error);
+            throw new Error(`Invalid PDF data: ${pdfValidation.error}`);
+        }
+
+        // Create a blob from the PDF data
+        const blob = new Blob([data], { type: 'application/pdf' });
+        
+        console.debug('[PDFViewer] Created blob for download:', {
+            size: blob.size,
+            type: blob.type
+        });
+
+        // Create a download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = downloadFileName;
+
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+
+        // Cleanup
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+    }, [downloadFileName]);
 
     // Fetch PDF data
     useEffect(() => {
@@ -114,23 +212,24 @@ export default function PDFViewer({ file, scaleDefault =1.5, isDemo = false }: P
             try {
                 setIsLoading(true);
                 setError(null);
-                
+
                 // Check cache first
                 const cachedData = await pdfCache.get(file);
                 if (cachedData && isMounted) {
-                    if (isPDFValid(cachedData)) {
+                    const pdfValidation = isPDFValid(cachedData);
+                    if (pdfValidation.ok) {
                         console.debug('[PDFViewer] Cache hit:', file);
                         setPdfData(cachedData);
                         setIsLoading(false);
                         return;
                     } else {
-                        console.debug('[PDFViewer] Invalid cached PDF, fetching from server:', file);
+                        console.debug('[PDFViewer] Invalid cached PDF, fetching from server:', file, pdfValidation.error);
                         await pdfCache.delete(file);
                     }
                 }
 
                 console.debug('[PDFViewer] Fetching from server:', file);
-                
+
                 // Use different endpoints based on demo mode
                 const endpoint = isDemo ? '/api/demo-pdf-proxy' : '/api/generate-file-shared-key';
                 const sasResponse = await fetch(endpoint, {
@@ -140,7 +239,7 @@ export default function PDFViewer({ file, scaleDefault =1.5, isDemo = false }: P
                     },
                     body: JSON.stringify({ file }),
                 });
-                
+
                 if (!sasResponse.ok) throw new Error('Failed to generate access token');
                 const { downloadLink } = await sasResponse.json();
 
@@ -173,10 +272,11 @@ export default function PDFViewer({ file, scaleDefault =1.5, isDemo = false }: P
                     contentType
                 });
 
-                if (!isPDFValid(data)) {
-                    throw new Error('Invalid PDF data received');
+                const pdfValidation = isPDFValid(data);
+                if (!pdfValidation.ok) {
+                    throw new Error(`Invalid PDF data received ${pdfValidation.error}`);
                 }
-                
+
                 if (isMounted) {
                     await pdfCache.set(file, data);
                     setPdfData(data);
@@ -217,20 +317,21 @@ export default function PDFViewer({ file, scaleDefault =1.5, isDemo = false }: P
                         <span>{Math.round(scale * 100)}%</span>
                         <Button onClick={handleZoomIn} disabled={scale >= MAX_SCALE}>+</Button>
                     </div>
+
                     <div className={styles.pdfWrapper}>
-                    <Document
-                        file={memoizedFile}
-                        onLoadSuccess={onDocumentLoadSuccess}
-                        onLoadError={onDocumentLoadError}
-                        options={options}
-                    >
-                        <Page 
-                            pageNumber={pageNumber} 
-                            renderAnnotationLayer={false} 
-                            renderTextLayer={false} 
-                            scale={scale}
-                        />
-                    </Document>
+                        <Document
+                            file={memoizedFile}
+                            onLoadSuccess={onDocumentLoadSuccess}
+                            onLoadError={onDocumentLoadError}
+                            options={options}
+                        >
+                            <Page
+                                pageNumber={pageNumber}
+                                renderAnnotationLayer={false}
+                                renderTextLayer={false}
+                                scale={scale}
+                            />
+                        </Document>
                     </div>
                 </>
             )}
@@ -250,6 +351,12 @@ export default function PDFViewer({ file, scaleDefault =1.5, isDemo = false }: P
                     disabled={pageNumber >= (numPages || 1) || !!error}
                 >
                     Next
+                </Button>
+                <Button
+                    onClick={handleDownload}
+                    disabled={isDownloading || !pdfData}
+                >
+                    {isDownloading ? 'Downloading...' : 'Download PDF'}
                 </Button>
             </div>
         </div>
