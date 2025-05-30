@@ -60,3 +60,24 @@
 .arrow.up {
     transform: rotate(180deg);
 }
+
+.multiSelectContainer {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+/* Fix for dropdowns at the bottom of the container */
+.multiSelectContainer:last-child .multiSelectDropdown {
+    position: absolute;
+    bottom: 100%;
+    top: auto;
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.sidebar .multiSelectContainer:last-child .multiSelectDropdown {
+    bottom: 100%;
+    top: auto;
+}

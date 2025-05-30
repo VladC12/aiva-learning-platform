@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-import { Question } from '@/models/Question';
 
 // Define a more specific type for the MongoDB query
 interface QuestionQuery {
@@ -9,7 +8,7 @@ interface QuestionQuery {
   subject?: string;
   topic?: { $in: string[] };
   difficulty_level?: { $in: string[] };
-  q_type?: { $in: string[] }; // Add question type filter
+  q_type?: { $in: string[] };
   inCourse?: boolean | { $ne: undefined };
   isHOTS?: boolean | { $ne: undefined };
   isCorrect?: boolean | { $ne: undefined };
@@ -30,25 +29,23 @@ export async function POST(request: NextRequest) {
     if (params.subject) query.subject = params.subject;
 
     // Handle comma-separated topics with $in operator
-    // If topic is missing or empty, don't filter by topic (include all topics)
     if (params.topic && params.topic.trim() !== '') {
       const topics = params.topic.split(',').map((t: string) => t.trim());
       query.topic = { $in: topics };
     }
 
     // Handle comma-separated difficulty levels with $in operator
-    // If difficulty_level is missing or empty, don't filter by difficulty (include all levels)
     if (params.difficulty_level && params.difficulty_level.trim() !== '') {
       const difficultyLevels = params.difficulty_level.split(',').map((d: string) => d.trim());
       query.difficulty_level = { $in: difficultyLevels };
     }
-
+    
     // Handle comma-separated question types with $in operator
     if (params.q_type && params.q_type.trim() !== '') {
       const types = params.q_type.split(',').map((t: string) => t.trim());
       query.q_type = { $in: types };
     }
-    
+
     // Handle inCourse filter (Yes/No/Unmarked)
     if (params.inCourse) {
       const inCourseValues = params.inCourse.split(',');
@@ -59,10 +56,14 @@ export async function POST(request: NextRequest) {
           query.inCourse = { $ne: undefined };
         } else if (inCourseValues.includes('Yes') && inCourseValues.includes('Unmarked')) {
           // Yes and Unmarked, but not No
-          query.$or = [{ inCourse: true }, { inCourse: undefined }];
+          query.$or = query.$or || [];
+          query.$or.push({ inCourse: true });
+          query.$or.push({ inCourse: undefined });
         } else if (inCourseValues.includes('No') && inCourseValues.includes('Unmarked')) {
           // No and Unmarked, but not Yes
-          query.$or = [{ inCourse: false }, { inCourse: undefined }];
+          query.$or = query.$or || [];
+          query.$or.push({ inCourse: false });
+          query.$or.push({ inCourse: undefined });
         } else if (inCourseValues.includes('Yes')) {
           // Only Yes
           query.inCourse = true;
@@ -138,37 +139,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Get pagination parameters
-    const page = parseInt(params.page) || 1;
-    const limit = parseInt(params.amount) || 20;
-    const skip = (page - 1) * limit;
-
+    // Connect to the database
     const client = await clientPromise;
     const db = client.db();
-
-    // Find questions matching the criteria with pagination
-    const questions = await db.collection('Questions')
-      .find(query)
-      .skip(skip)
-      .limit(limit)
-      .toArray();
-
-    console.log(`Found ${questions.length} matching questions for page ${page}, limit ${limit}, skip ${skip}`);
-
-    return NextResponse.json(questions as Question[]);
+    
+    // Get the count of questions matching the query
+    const count = await db.collection('Questions').countDocuments(query);
+    
+    // Return the count
+    return NextResponse.json({ count });
   } catch (error) {
-    console.error('Failed to fetch questions:', error);
+    console.error('Error counting questions:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch questions' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
-}
-
-// Keep the GET method for backward compatibility or remove if not needed
-export async function GET() {
-  return NextResponse.json(
-    { error: 'Method not supported, use POST instead' },
-    { status: 405 }
-  );
 }
