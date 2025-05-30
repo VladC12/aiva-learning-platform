@@ -20,6 +20,7 @@ interface FilterState {
   subject: string;
   topic: string[];
   difficulty_level: string[];
+  q_type: string[]; // Added question type filter
 }
 
 export default function Home() {
@@ -33,7 +34,8 @@ export default function Home() {
     class: '',
     subject: '',
     topic: [],
-    difficulty_level: []
+    difficulty_level: [],
+    q_type: []
   });
 
   useEffect(() => {
@@ -114,6 +116,13 @@ export default function Home() {
     }));
   };
 
+  const handleQuestionTypeChange = (selected: string[]) => {
+    setFilters(prev => ({
+      ...prev,
+      q_type: selected
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams({
@@ -121,7 +130,8 @@ export default function Home() {
       class: filters.class,
       subject: filters.subject,
       topic: filters.topic.join(','),
-      difficulty_level: filters.difficulty_level.join(',')
+      difficulty_level: filters.difficulty_level.join(','),
+      q_type: filters.q_type.join(',')
     });
     router.push(`/questions?${params.toString()}`);
   };
@@ -133,7 +143,7 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <h1>Question Bank</h1>
+      <h1>Question Generator</h1>
       <form onSubmit={handleSubmit} className={styles.filterForm}>
         <div className={styles.filterGrid}>
           <div className={styles.filterItem}>
@@ -198,6 +208,16 @@ export default function Home() {
               value={filters.difficulty_level}
               onChange={handleDifficultiesChange}
               placeholder="Select difficulty levels"
+            />
+          </div>
+
+          <div className={styles.filterItem}>
+            <label htmlFor="q_type">{filterOptions.q_type?.label || "Question Type"}</label>
+            <MultiSelect
+              options={filterOptions.q_type?.content || []}
+              value={filters.q_type}
+              onChange={handleQuestionTypeChange}
+              placeholder="Select question types"
             />
           </div>
         </div>

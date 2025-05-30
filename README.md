@@ -25,6 +25,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 | `AZURE_STORAGE_ACCOUNT_KEY` | Azure Storage access key | `abcd1234...` |
 | `AZURE_STORAGE_CONTAINER_NAME` | Azure Storage container name | `mycontainer` |
 | `EMAIL_HOST` | SMTP server hostname | `smtp.gmail.com` |
+| `EMAIL_USER` | Sender user for logging in SMPT server | `no-reply@yourapp.com` |
 | `EMAIL_FROM` | Sender email address | `no-reply@yourapp.com` |
 | `EMAIL_PASSWORD` | SMTP password | `your-app-specific-password` |
 | `NEXT_PUBLIC_APP_URL` | Public URL of your application (in development, defaults to http://localhost:3000) | `https://example.com` |

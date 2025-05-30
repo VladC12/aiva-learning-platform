@@ -47,15 +47,6 @@ export async function GET(request: Request) {
     // Fetch paginated questions by their IDs
     const questions = await questionsCollection
       .find({ _id: { $in: paginatedIds } })
-      .project({
-        _id: 1,
-        subject: 1,
-        topic: 1,
-        question: 1,
-        solution: 1,
-        difficulty_level: 1,
-        class: 1
-      })
       .toArray();
     
     return NextResponse.json({ 

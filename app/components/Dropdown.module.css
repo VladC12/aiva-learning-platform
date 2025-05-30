@@ -28,6 +28,8 @@
   background: white;
   appearance: none;
   cursor: pointer;
+  position: relative;
+  z-index: 2;
 }
 
 .select:focus {
@@ -47,4 +49,11 @@
 
 .arrow.up {
   transform: translateY(-50%) rotate(180deg);
+}
+
+/* Fix for dropdowns at the bottom of the container */
+.selectWrapper:last-child .select,
+.filterItem:last-child .select {
+  position: relative;
+  z-index: 10;
 }
