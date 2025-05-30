@@ -52,7 +52,7 @@ export default function Bank() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
-  
+
   const [filters, setFilters] = useState<FilterState>({
     education_board: '',
     class: '',
@@ -89,15 +89,15 @@ export default function Bank() {
           throw new Error('Failed to fetch filters');
         }
         const data = await response.json();
-        
+
         // Convert array to an object with keys for easier access
         const filtersObj: Record<string, FilterOption> = {};
         data.forEach((filter: FilterOption) => {
           filtersObj[filter.key] = filter;
         });
-        
+
         setFilterOptions(filtersObj);
-        
+
         // Set default values for filters with only one option
         if (filtersObj.education_board && filtersObj.education_board.content.length === 1) {
           setFilters(prev => ({
@@ -105,21 +105,21 @@ export default function Bank() {
             education_board: filtersObj.education_board.content[0]
           }));
         }
-        
+
         if (filtersObj.class && filtersObj.class.content.length === 1) {
           setFilters(prev => ({
             ...prev,
             class: filtersObj.class.content[0]
           }));
         }
-        
+
         if (filtersObj.subject && filtersObj.subject.content.length === 1) {
           setFilters(prev => ({
             ...prev,
             subject: filtersObj.subject.content[0]
           }));
         }
-        
+
         // Set default difficulty levels if available
         if (filtersObj.difficulty_level) {
           setFilters(prev => ({
@@ -141,10 +141,10 @@ export default function Bank() {
   useEffect(() => {
     const fetchQuestions = async () => {
       if (userLoading) return;
-      
+
       try {
         setIsLoading(true);
-        
+
         // Create request body for POST request
         const requestBody = {
           education_board: filters.education_board || '',
@@ -159,9 +159,9 @@ export default function Bank() {
           isCorrect: filters.isCorrect.join(','),
           q_type: filters.q_type.join(',')
         };
-        
+
         console.log(`Fetching page ${pagination.page} with limit ${pagination.limit}`);
-        
+
         const response = await fetch('/api/questions', {
           method: 'POST',
           headers: {
@@ -169,11 +169,11 @@ export default function Bank() {
           },
           body: JSON.stringify(requestBody),
         });
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch questions');
         }
-        
+
         const questions = await response.json();
         setQuestions(questions);
         console.log(`Loaded ${questions.length} questions for page ${pagination.page}`);
@@ -183,7 +183,7 @@ export default function Bank() {
         setIsLoading(false);
       }
     };
-    
+
     if (!userLoading && user && user.type === 'reviewer') {
       fetchQuestions();
     }
@@ -194,7 +194,7 @@ export default function Bank() {
   useEffect(() => {
     const fetchCount = async () => {
       if (userLoading || !user) return;
-      
+
       try {
         // Create request body for count POST request
         const countRequestBody = {
@@ -208,9 +208,9 @@ export default function Bank() {
           isCorrect: filters.isCorrect.join(','),
           q_type: filters.q_type.join(','),
         };
-        
+
         console.log('Fetching count with filters:', countRequestBody);
-        
+
         const countResponse = await fetch('/api/questions/count', {
           method: 'POST',
           headers: {
@@ -218,7 +218,7 @@ export default function Bank() {
           },
           body: JSON.stringify(countRequestBody),
         });
-        
+
         if (countResponse.ok) {
           const countData = await countResponse.json();
           setPagination(prev => ({
@@ -234,7 +234,7 @@ export default function Bank() {
         console.error("Error fetching question count:", error);
       }
     };
-    
+
     if (user?.type === 'reviewer') {
       fetchCount();
     }
@@ -381,7 +381,7 @@ export default function Bank() {
 
       if (response.ok) {
         // Update local state
-        setQuestions(questions.map(q => 
+        setQuestions(questions.map(q =>
           q._id === questionId ? { ...q, inCourse: newValue } : q
         ));
       } else {
@@ -404,7 +404,7 @@ export default function Bank() {
 
       if (response.ok) {
         // Update local state
-        setQuestions(questions.map(q => 
+        setQuestions(questions.map(q =>
           q._id === questionId ? { ...q, difficulty_level: newDifficulty } : q
         ));
       } else {
@@ -427,7 +427,7 @@ export default function Bank() {
 
       if (response.ok) {
         // Update local state
-        setQuestions(questions.map(q => 
+        setQuestions(questions.map(q =>
           q._id === questionId ? { ...q, isHOTS: newValue } : q
         ));
       } else {
@@ -450,7 +450,7 @@ export default function Bank() {
 
       if (response.ok) {
         // Update local state
-        setQuestions(questions.map(q => 
+        setQuestions(questions.map(q =>
           q._id === questionId ? { ...q, isCorrect: newValue } : q
         ));
       } else {
@@ -473,7 +473,7 @@ export default function Bank() {
 
       if (response.ok) {
         // Update local state
-        setQuestions(questions.map(q => 
+        setQuestions(questions.map(q =>
           q._id === questionId ? { ...q, q_type: newType } : q
         ));
       } else {
@@ -518,7 +518,7 @@ export default function Bank() {
           <div className={styles.sidebar}>
             <div className={styles.filterSection}>
               <h2>Filters</h2>
-              
+
               <div className={styles.filterItem}>
                 <Dropdown
                   label={filterOptions.education_board?.label || "Education Board"}
@@ -531,7 +531,7 @@ export default function Bank() {
                   placeholder="Select Education Board"
                 />
               </div>
-              
+
               <div className={styles.filterItem}>
                 <Dropdown
                   label={filterOptions.class?.label || "Class"}
@@ -544,7 +544,7 @@ export default function Bank() {
                   placeholder="Select Class"
                 />
               </div>
-              
+
               <div className={styles.filterItem}>
                 <Dropdown
                   label={filterOptions.subject?.label || "Subject"}
@@ -567,7 +567,15 @@ export default function Bank() {
                   placeholder="Select topics"
                 />
               </div>
-
+              <div className={styles.filterItem}>
+                <label htmlFor="q_type">{filterOptions.q_type?.label || "Question Type"}</label>
+                <MultiSelect
+                  options={filterOptions.q_type?.content || []}
+                  value={filters.q_type}
+                  onChange={handleQuestionTypeChange}
+                  placeholder="Select question types"
+                />
+              </div>
               <div className={styles.filterItem}>
                 <label htmlFor="difficulties">{filterOptions.difficulty_level?.label || "Difficulty"}</label>
                 <MultiSelect
@@ -607,16 +615,6 @@ export default function Bank() {
                   placeholder="Filter by correctness"
                 />
               </div>
-
-              <div className={styles.filterItem}>
-                <label htmlFor="q_type">{filterOptions.q_type?.label || "Question Type"}</label>
-                <MultiSelect
-                  options={filterOptions.q_type?.content || []}
-                  value={filters.q_type}
-                  onChange={handleQuestionTypeChange}
-                  placeholder="Select question types"
-                />
-              </div>
             </div>
           </div>
 
@@ -632,9 +630,9 @@ export default function Bank() {
                   </div>
                   <div className={styles.limitSelector}>
                     <label htmlFor="limit">Show:</label>
-                    <select 
-                      id="limit" 
-                      value={pagination.limit.toString()} 
+                    <select
+                      id="limit"
+                      value={pagination.limit.toString()}
                       onChange={(e) => handleLimitChange(e.target.value)}
                     >
                       <option value="10">10</option>
@@ -659,15 +657,15 @@ export default function Bank() {
                         <div className={styles.questionCorrect}>Correct</div>
                         <div className={styles.questionType}>Type</div>
                       </div>
-                      
+
                       {questions.map((question) => (
                         <div key={question._id} className={styles.questionItem}>
                           <div className={styles.questionId}>{question._id.substring(0, 8)}...</div>
                           <div className={styles.questionSubject}>{question.subject}</div>
                           <div className={styles.questionTopic}>{question.topic}</div>
                           <div className={styles.questionContent}>
-                            <button 
-                              className={styles.viewQuestionButton} 
+                            <button
+                              className={styles.viewQuestionButton}
                               onClick={() => handleViewQuestion(question)}
                             >
                               View Question
@@ -727,10 +725,10 @@ export default function Bank() {
                         </div>
                       ))}
                     </div>
-                    
+
                     {/* Pagination controls */}
                     <div className={styles.paginationControls}>
-                      <button 
+                      <button
                         className={styles.paginationButton}
                         disabled={pagination.page <= 1}
                         onClick={() => handlePageChange(pagination.page - 1)}
@@ -740,7 +738,7 @@ export default function Bank() {
                       <span className={styles.pageInfo}>
                         Page {pagination.page} of {pagination.totalPages}
                       </span>
-                      <button 
+                      <button
                         className={styles.paginationButton}
                         disabled={pagination.page >= pagination.totalPages}
                         onClick={() => handlePageChange(pagination.page + 1)}
@@ -762,10 +760,10 @@ export default function Bank() {
       </div>
 
       {selectedQuestion && (
-        <QuestionModal 
-          question={selectedQuestion} 
-          isOpen={showModal} 
-          onClose={closeModal} 
+        <QuestionModal
+          question={selectedQuestion}
+          isOpen={showModal}
+          onClose={closeModal}
         />
       )}
     </main>
