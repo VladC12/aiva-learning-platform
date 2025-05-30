@@ -61,8 +61,9 @@ export async function GET(
     }
     
     // Get the student ID from params - fixed to use extracted id from params
-    const { params: { id: studentId }} = await context;
-    
+    const { params } = await context;
+    const { id: studentId } = await params;
+
     let studentObjectId;
     try {
       studentObjectId = new ObjectId(studentId);

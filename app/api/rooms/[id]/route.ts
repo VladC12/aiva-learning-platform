@@ -9,7 +9,8 @@ export async function GET(
   context: any
 ) {
   const { params } = await context;
-    const { id: roomId } = await params;
+  const { id: roomId } = await params;
+  
   try {
     if (!roomId) {
       console.error('Room ID is required');
