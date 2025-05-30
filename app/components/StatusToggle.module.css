@@ -1,0 +1,80 @@
+.statusToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  width: 80%;
+  text-align: left;
+}
+
+.statusLabel {
+  flex: 1;
+}
+
+.toggleButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.toggleIcon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 30%;
+  cursor: pointer;
+  border: none;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.toggleIcon.active {
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #6b7280;
+}
+
+.toggleYes {
+  background-color: #4ade80;
+  color: white;
+}
+
+.toggleNo {
+  background-color: #f87171;
+  color: white;
+}
+
+.toggleYes:hover {
+  background-color: #22c55e;
+}
+
+.toggleNo:hover {
+  background-color: #ef4444;
+}
+
+/* Status-specific styles for the toggle component */
+.yes {
+  background-color: rgba(74, 222, 128, 0.2);
+  color: #16a34a;
+  border-color: #4ade80;
+}
+
+.no {
+  background-color: rgba(248, 113, 113, 0.2);
+  color: #dc2626;
+  border-color: #f87171;
+}
+
+.unmarked {
+  background-color: rgba(234, 179, 8, 0.2);
+  color: #ca8a04;
+  border-color: #fde68a;
+}
+
+.statusToggle:hover {
+  opacity: 0.85;
+}
