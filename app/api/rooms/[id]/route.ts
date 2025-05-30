@@ -8,8 +8,8 @@ export async function GET(
   // eslint-disable-next-line
   context: any
 ) {
-  const { params: { id: roomId } } = await context;
-  
+  const { params } = await context;
+    const { id: roomId } = await params;
   try {
     if (!roomId) {
       console.error('Room ID is required');
