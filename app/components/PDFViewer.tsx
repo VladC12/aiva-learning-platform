@@ -55,7 +55,7 @@ const isPDFValid = (data: ArrayBuffer): { ok: boolean, error: string } => {
             });
         }
 
-        return {ok: isValid, error: isValid ? '' : 'Invalid PDF header'};
+        return { ok: isValid, error: isValid ? '' : 'Invalid PDF header' };
     } catch (err) {
         console.error('[PDFViewer] PDF validation error:', err);
         return { ok: false, error: 'Error validating PDF' };
@@ -171,7 +171,8 @@ export default function PDFViewer({ file, scaleDefault = 1.5, isDemo = false }: 
         } finally {
             setIsDownloading(false);
         }
-    }, [pdfData, isDownloading, file]); // Added file to dependencies
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pdfData, isDownloading, file]);
 
     // Helper function to handle the actual PDF download
     const downloadPDF = useCallback(async (data: ArrayBuffer) => {
@@ -183,7 +184,7 @@ export default function PDFViewer({ file, scaleDefault = 1.5, isDemo = false }: 
 
         // Create a blob from the PDF data
         const blob = new Blob([data], { type: 'application/pdf' });
-        
+
         console.debug('[PDFViewer] Created blob for download:', {
             size: blob.size,
             type: blob.type
