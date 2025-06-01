@@ -1,0 +1,244 @@
+.main {
+  padding: 2rem;
+  width: 95%;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  max-height: 85vh;
+  overflow: hidden;
+}
+
+.header {
+  padding: 0.5rem 2rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.header h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.header p {
+  color: #666;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+}
+
+@media (max-width: 900px) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sidebar {
+  padding: 1.5rem;
+  background-color: #f9fafb;
+  border-right: 1px solid #f0f0f0;
+  overflow-y: auto;
+  max-height: calc(85vh - 200px);
+}
+
+.filterSection {
+  padding-bottom: 1rem;
+}
+
+.filterSection h2 {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.filterItem {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.filterItem label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.inCourseFilter {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filterButton {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  flex: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filterButton.active {
+  background-color: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: calc(85vh - 200px); /* Subtract header height */
+  overflow: hidden;
+}
+
+.questionControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.questionCount {
+  font-weight: 500;
+}
+
+.limitSelector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.limitSelector select {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.questionList {
+  border: 1px solid #eaeaea;
+  border-radius: 6px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.questionHeader {
+  display: grid;
+  grid-template-columns: 0.7fr 1fr 1fr 1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
+  padding: 1rem;
+  background-color: #f3f4f6;
+  font-weight: 600;
+  color: #4b5563;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.questionItem {
+  display: grid;
+  grid-template-columns: 0.7fr 1fr 1fr 1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
+  padding: 1rem;
+  border-top: 1px solid #eaeaea;
+  min-height: 60px;
+}
+
+.questionItem:hover {
+  background-color: #f9fafb;
+}
+
+.questionId {
+  color: #6b7280;
+  font-size: 0.9rem;
+  font-family: monospace;
+}
+
+.questionSubject, .questionTopic, .questionDifficulty, .questionClass {
+  color: #4b5563;
+}
+
+.questionHOTS, .questionCorrect {
+  color: #4b5563;
+}
+
+.questionType {
+  color: #4b5563;
+}
+
+.typeSelect {
+  width: 100%;
+  padding: 0.35rem;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  background-color: white;
+  font-size: 0.9rem;
+}
+
+.viewQuestionButton {
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+  text-align: left;
+}
+
+.viewQuestionButton:hover {
+  text-decoration: underline;
+}
+
+.emptyState {
+  padding: 3rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.paginationControls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1.5rem;
+  gap: 1rem;
+}
+
+.paginationButton {
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background-color: #e5e7eb;
+}
+
+.paginationButton:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.pageInfo {
+  color: #6b7280;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  color: #6b7280;
+  font-size: 1.1rem;
+}
