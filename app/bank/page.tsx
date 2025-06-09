@@ -646,8 +646,6 @@ export default function Bank() {
                   <>
                     <div className={styles.questionList}>
                       <div className={styles.questionHeader}>
-                        <div className={styles.questionId}>ID</div>
-                        <div className={styles.questionSubject}>Subject</div>
                         <div className={styles.questionTopic}>Topic</div>
                         <div className={styles.questionContent}>Question</div>
                         <div className={styles.questionDifficulty}>Difficulty</div>
@@ -660,8 +658,6 @@ export default function Bank() {
 
                       {questions.map((question) => (
                         <div key={question._id} className={styles.questionItem}>
-                          <div className={styles.questionId}>{question._id.substring(0, 8)}...</div>
-                          <div className={styles.questionSubject}>{question.subject}</div>
                           <div className={styles.questionTopic}>{question.topic}</div>
                           <div className={styles.questionContent}>
                             <button
