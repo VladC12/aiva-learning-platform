@@ -1,5 +1,19 @@
 import { ObjectId } from 'mongodb';
 
+export interface QuestionQuery {
+  education_board?: string;
+  class?: string;
+  subject?: string;
+  topic?: { $in: string[] };
+  difficulty_level?: { $in: string[] };
+  q_type?: { $in: string[] };
+  inCourse?: boolean | { $ne: undefined };
+  isHOTS?: boolean | { $ne: undefined };
+  isCorrect?: boolean | { $ne: undefined };
+  $or?: Array<Record<string, any>>;
+  $and?: Array<Record<string, any>>;
+}
+
 export interface TrackedQuestion {
   question: Question | null;
   status: 'success' | 'failed' | 'unsure';
@@ -28,16 +42,24 @@ type ContentPart = TextContent | MathContent | ListContent;
 
 export interface Question {
   _id: string | ObjectId;
+  education_board: string;
+  class: string;
   subject: string;
   topic: string;
   question: string;
   solution: string;
   difficulty_level: string;
-  class: string;
-  education_board?: string;
-  // For PDF question sets
   question_pdf_blob?: string;
   solution_pdf_blob?: string;
   label?: string;
-  // Add any other fields used in your application
+  inCourse?: boolean;
+  isHOTS?: boolean;
+  isCorrect?: boolean;
+  q_type?: string;
+  // Moderator fields
+  modDifficulty_level?: string;
+  modInCourse?: boolean;
+  modIsHOTS?: boolean;
+  modIsCorrect?: boolean;
+  modQ_type?: string;
 }
