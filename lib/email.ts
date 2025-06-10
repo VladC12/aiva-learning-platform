@@ -1,6 +1,45 @@
 import nodemailer from 'nodemailer';
 
-interface EmailConfig {
+let transporter: nodemailer.Transporter | null = null;
+
+// Initialize email configuration from environment variables
+function initializeEmailService() {
+  try {
+    if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+      console.warn('Email configuration missing. Email functionality will be disabled.');
+      return;
+    }
+
+    // Check if we're using Gmail
+    const isGmail = process.env.EMAIL_HOST.includes('gmail');
+    
+    const config: any = {
+      host: process.env.EMAIL_HOST,
+      port: parseInt(process.env.EMAIL_PORT || '587'),
+      secure: process.env.EMAIL_SECURE === 'true',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
+      }
+    };
+    
+    // Use service for Gmail to better handle its requirements
+    if (isGmail) {
+      config.service = 'gmail';
+    }
+
+    transporter = nodemailer.createTransport(config);
+    console.info('Email service configured successfully.');
+  } catch (error) {
+    console.error('Failed to initialize email service:', error);
+  }
+}
+
+// Initialize on module load
+initializeEmailService();
+
+// Legacy function for custom configuration
+export function configureEmailService(config: {
   host: string;
   port: number;
   secure: boolean;
@@ -9,82 +48,86 @@ interface EmailConfig {
     pass: string;
   };
   from: string;
-}
-
-function validateEmailConfig(): EmailConfig {
-  const required = [
-    'EMAIL_HOST',
-    'EMAIL_USER',
-    'EMAIL_PASSWORD',
-    'EMAIL_FROM'
-  ];
-
-  const missing = required.filter(key => !process.env[key]);
-  
-  if (missing.length > 0) {
-    throw new Error(`Missing email configuration: ${missing.join(', ')}`);
-  }
-
-  return {
-    host: process.env.EMAIL_HOST!,
-    port: parseInt(process.env.EMAIL_PORT || '587'),
-    secure: process.env.EMAIL_SECURE === 'true',
-    auth: {
-      user: process.env.EMAIL_USER!,
-      pass: process.env.EMAIL_PASSWORD!
-    },
-    from: process.env.EMAIL_FROM!
-  };
-}
-
-let transporter: nodemailer.Transporter;
-
-try {
-  const config = validateEmailConfig();
+}) {
   transporter = nodemailer.createTransport({
     host: config.host,
     port: config.port,
     secure: config.secure,
-    auth: config.auth
+    auth: {
+      user: config.auth.user,
+      pass: config.auth.pass
+    }
   });
-} catch (error) {
-  console.error('Email configuration error:', error);
-  // Allow the application to start, but email functionality will be disabled
-  transporter = null as unknown as nodemailer.Transporter;
 }
 
-interface SendEmailOptions {
-  to: string;
-  subject: string;
-  html: string;
-}
-
-export async function sendEmail(options: SendEmailOptions) {
+export function validateEmailConfig() {
   if (!transporter) {
+    console.error('Email service not configured', transporter);
     throw new Error('Email service not configured');
   }
 
+  // For sending emails, we need the FROM address
+  if (!process.env.EMAIL_FROM) {
+    throw new Error('EMAIL_FROM environment variable is required');
+  }
+
+  return {
+    ...transporter.options,
+    from: process.env.EMAIL_FROM
+  };
+}
+
+export async function sendEmail(options: {
+  to: string;
+  subject: string;
+  html: string;
+  text?: string;
+}) {
+  // If transporter is not configured, try to initialize it again
+  if (!transporter) {
+    initializeEmailService();
+    if (!transporter) {
+      console.error('Email service not configured and could not be initialized');
+      throw new Error('Email service not configured');
+    }
+  }
+
   try {
-    await transporter.sendMail({
-      from: `"Learning Platform" <${process.env.EMAIL_FROM}>`,
-      ...options
+    const config = validateEmailConfig();
+    const result = await transporter.sendMail({
+      from: config.from,
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
+      text: options.text || options.html.replace(/<[^>]*>/g, '')
     });
-  } catch (error) {
+    
+    console.log('Email sent successfully');
+    return result;
+  } catch (error: any) {
     console.error('Email sending error:', error);
-    throw new Error('Failed to send email');
+    throw new Error(`Failed to send email: ${error.message}`);
   }
 }
 
 export async function sendPasswordResetEmail(email: string, token: string) {
-  const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${token}`;
+  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`;
   
-  await sendEmail({
+  return sendEmail({
     to: email,
-    subject: 'Password Reset Request',
+    subject: 'Password Reset',
     html: `
-      <p>You requested a password reset. Click the link below to reset your password:</p>
-      <p><a href="${resetUrl}">Reset Password</a></p>
-      <p>If you didn't request this, please ignore this email.</p>
+      <p>You requested a password reset for your account.</p>
+      <p>Click the link below to reset your password:</p>
+      <p><a href="${resetUrl}">${resetUrl}</a></p>
+      <p>This link will expire in 1 hour.</p>
+      <p>If you did not request a password reset, please ignore this email.</p>
     `
   });
 }
+
+export default {
+  configureEmailService,
+  sendEmail,
+  sendPasswordResetEmail
+};
