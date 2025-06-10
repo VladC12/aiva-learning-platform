@@ -1,20 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-import { Question } from '@/models/Question';
+import { Question, QuestionQuery } from '@/models/Question';
 
-// Define a more specific type for the MongoDB query
-interface QuestionQuery {
-  education_board?: string;
-  class?: string;
-  subject?: string;
-  topic?: { $in: string[] };
-  difficulty_level?: { $in: string[] };
-  q_type?: { $in: string[] }; // Add question type filter
-  inCourse?: boolean | { $ne: undefined };
-  isHOTS?: boolean | { $ne: undefined };
-  isCorrect?: boolean | { $ne: undefined };
-  $or?: Array<{ inCourse?: boolean | undefined; isHOTS?: boolean | undefined; isCorrect?: boolean | undefined }>;
-}
+
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,6 +35,7 @@ export async function POST(request: NextRequest) {
     if (params.q_type && params.q_type.trim() !== '') {
       const types = params.q_type.split(',').map((t: string) => t.trim());
       query.q_type = { $in: types };
+      console.log('Filtering by question types:', types);
     }
     
     // Handle inCourse filter (Yes/No/Unmarked)
@@ -137,6 +126,14 @@ export async function POST(request: NextRequest) {
         }
       }
     }
+    
+    // Handle moderator view - only show questions marked as inCourse and isCorrect
+    if (params.moderatorView === true) {
+      // Add $and condition to ensure we only show questions that are marked as in course and correct
+      query.$and = query.$and || [];
+      query.$and.push({ inCourse: true });
+      query.$and.push({ isCorrect: true });
+    }
 
     // Get pagination parameters
     const page = parseInt(params.page) || 1;
@@ -145,6 +142,9 @@ export async function POST(request: NextRequest) {
 
     const client = await clientPromise;
     const db = client.db();
+
+    // Log the final query for debugging
+    console.log('Final query:', JSON.stringify(query));
 
     // Find questions matching the criteria with pagination
     const questions = await db.collection('Questions')
