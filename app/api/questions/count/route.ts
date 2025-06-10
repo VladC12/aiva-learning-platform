@@ -1,19 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-
-// Define a more specific type for the MongoDB query
-interface QuestionQuery {
-  education_board?: string;
-  class?: string;
-  subject?: string;
-  topic?: { $in: string[] };
-  difficulty_level?: { $in: string[] };
-  q_type?: { $in: string[] };
-  inCourse?: boolean | { $ne: undefined };
-  isHOTS?: boolean | { $ne: undefined };
-  isCorrect?: boolean | { $ne: undefined };
-  $or?: Array<{ inCourse?: boolean | undefined; isHOTS?: boolean | undefined; isCorrect?: boolean | undefined }>;
-}
+import { QuestionQuery } from '@/models/Question';
 
 export async function POST(request: NextRequest) {
   try {
@@ -137,6 +124,14 @@ export async function POST(request: NextRequest) {
           query.isCorrect = undefined;
         }
       }
+    }
+
+    // Handle moderator view - only show questions marked as inCourse and isCorrect
+    if (params.moderatorView === true) {
+      // Add $and condition to ensure we only show questions that are marked as in course and correct
+      query.$and = query.$and || [];
+      query.$and.push({ inCourse: true });
+      query.$and.push({ isCorrect: true });
     }
 
     // Connect to the database
