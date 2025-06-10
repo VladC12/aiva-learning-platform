@@ -32,6 +32,13 @@
     background: white;
 }
 
+.selectedText {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 20px);
+}
+
 .container[data-open="true"] .select {
     border-color: #0070f3;
 }
@@ -46,6 +53,14 @@
 
 .option:hover {
     background: #f5f5f5;
+}
+
+.option.selected {
+    background-color: rgba(0, 112, 243, 0.1);
+}
+
+.option.selected:hover {
+    background-color: rgba(0, 112, 243, 0.2);
 }
 
 .placeholder {
