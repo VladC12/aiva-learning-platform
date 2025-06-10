@@ -98,6 +98,12 @@ function QuestionsContent() {
             const value = searchParams.get(param);
             if (value) paramObject[param] = value;
           });
+          
+          // Add the question type if it exists
+          const q_type = searchParams.get('q_type');
+          if (q_type) paramObject.q_type = q_type;
+          
+          console.log('Sending query parameters:', paramObject);
 
           const response = await fetch('/api/questions', {
             method: 'POST',
