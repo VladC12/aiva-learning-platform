@@ -15,7 +15,7 @@ export default function Navbar() {
           <Link href="/">DPS Society</Link>
         </div>
         <div className={styles.navContent}>
-          {user?.type === 'reviewer' && (
+          {(user?.type === 'reviewer' || user?.type === 'moderator') && (
             <div className={styles.navLinks}>
               <Link href="/bank" className={styles.bankButton}>
                 Question Bank

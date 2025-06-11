@@ -21,7 +21,7 @@ export interface UserData {
       isPdfQuestionSet?: boolean;
     }
   };
-  type?: 'student' | 'teacher' | 'reviewer';
+  type?: 'student' | 'teacher' | 'reviewer' | 'moderator';
   room?: string;
 }
 
