@@ -1,5 +1,16 @@
 import nodemailer from 'nodemailer';
 
+interface EmailConfig {
+  host: string;
+  port: number;
+  secure: boolean;
+  service?: string;
+  auth: {
+    user: string;
+    pass: string;
+  }
+}
+
 let transporter: nodemailer.Transporter | null = null;
 
 // Initialize email configuration from environment variables
@@ -12,8 +23,8 @@ function initializeEmailService() {
 
     // Check if we're using Gmail
     const isGmail = process.env.EMAIL_HOST.includes('gmail');
-    
-    const config: any = {
+
+    const config: EmailConfig = {
       host: process.env.EMAIL_HOST,
       port: parseInt(process.env.EMAIL_PORT || '587'),
       secure: process.env.EMAIL_SECURE === 'true',
@@ -22,7 +33,7 @@ function initializeEmailService() {
         pass: process.env.EMAIL_PASSWORD
       }
     };
-    
+
     // Use service for Gmail to better handle its requirements
     if (isGmail) {
       config.service = 'gmail';
@@ -101,18 +112,18 @@ export async function sendEmail(options: {
       html: options.html,
       text: options.text || options.html.replace(/<[^>]*>/g, '')
     });
-    
+
     console.log('Email sent successfully');
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Email sending error:', error);
-    throw new Error(`Failed to send email: ${error.message}`);
+    throw new Error(`Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
 export async function sendPasswordResetEmail(email: string, token: string) {
   const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`;
-  
+
   return sendEmail({
     to: email,
     subject: 'Password Reset',
