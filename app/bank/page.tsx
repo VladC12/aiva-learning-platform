@@ -23,6 +23,12 @@ interface Question {
   isHOTS?: boolean;
   isCorrect?: boolean;
   q_type?: string; // Added question type field
+  // Moderator fields
+  modDifficulty_level?: string;
+  modInCourse?: boolean;
+  modIsHOTS?: boolean;
+  modIsCorrect?: boolean;
+  modQ_type?: string;
 }
 
 interface FilterOption {
@@ -72,9 +78,9 @@ export default function Bank() {
     totalPages: 0
   });
 
-  // Redirect non-reviewer users
+  // Redirect non-reviewer/non-moderator users
   useEffect(() => {
-    if (!userLoading && user && user.type !== 'reviewer') {
+    if (!userLoading && user && user.type !== 'reviewer' && user.type !== 'moderator') {
       router.push('/');
     }
   }, [user, userLoading, router]);
@@ -157,7 +163,9 @@ export default function Bank() {
           inCourse: filters.inCourse.join(','),
           isHOTS: filters.isHOTS.join(','),
           isCorrect: filters.isCorrect.join(','),
-          q_type: filters.q_type.join(',')
+          q_type: filters.q_type.join(','),
+          // For moderators, only show questions that are marked as in course and correct
+          moderatorView: user?.type === 'moderator'
         };
 
         console.log(`Fetching page ${pagination.page} with limit ${pagination.limit}`);
@@ -184,7 +192,7 @@ export default function Bank() {
       }
     };
 
-    if (!userLoading && user && user.type === 'reviewer') {
+    if (!userLoading && user && (user.type === 'reviewer' || user.type === 'moderator')) {
       fetchQuestions();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -207,6 +215,7 @@ export default function Bank() {
           isHOTS: filters.isHOTS.join(','),
           isCorrect: filters.isCorrect.join(','),
           q_type: filters.q_type.join(','),
+          moderatorView: user?.type === 'moderator'
         };
 
         console.log('Fetching count with filters:', countRequestBody);
@@ -235,7 +244,7 @@ export default function Bank() {
       }
     };
 
-    if (user?.type === 'reviewer') {
+    if (user?.type === 'reviewer' || user?.type === 'moderator') {
       fetchCount();
     }
   }, [filters, pagination.limit, user, userLoading]);
@@ -484,6 +493,121 @@ export default function Bank() {
     }
   };
 
+  const handleModeratorChangeDifficulty = async (questionId: string, newDifficulty: string) => {
+    try {
+      const response = await fetch(`/api/questions/${questionId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ modDifficulty_level: newDifficulty }),
+      });
+
+      if (response.ok) {
+        // Update local state
+        setQuestions(questions.map(q =>
+          q._id === questionId ? { ...q, modDifficulty_level: newDifficulty } : q
+        ));
+      } else {
+        console.error('Failed to update moderator question difficulty');
+      }
+    } catch (error) {
+      console.error('Error updating moderator question difficulty:', error);
+    }
+  };
+
+  const handleModeratorToggleInCourse = async (questionId: string, newValue: boolean) => {
+    try {
+      const response = await fetch(`/api/questions/${questionId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ modInCourse: newValue }),
+      });
+
+      if (response.ok) {
+        // Update local state
+        setQuestions(questions.map(q =>
+          q._id === questionId ? { ...q, modInCourse: newValue } : q
+        ));
+      } else {
+        console.error('Failed to update moderator question in course status');
+      }
+    } catch (error) {
+      console.error('Error updating moderator question in course status:', error);
+    }
+  };
+
+  const handleModeratorToggleHOTS = async (questionId: string, newValue: boolean) => {
+    try {
+      const response = await fetch(`/api/questions/${questionId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ modIsHOTS: newValue }),
+      });
+
+      if (response.ok) {
+        // Update local state
+        setQuestions(questions.map(q =>
+          q._id === questionId ? { ...q, modIsHOTS: newValue } : q
+        ));
+      } else {
+        console.error('Failed to update moderator question HOTS status');
+      }
+    } catch (error) {
+      console.error('Error updating moderator question HOTS status:', error);
+    }
+  };
+
+  const handleModeratorToggleCorrect = async (questionId: string, newValue: boolean) => {
+    try {
+      const response = await fetch(`/api/questions/${questionId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ modIsCorrect: newValue }),
+      });
+
+      if (response.ok) {
+        // Update local state
+        setQuestions(questions.map(q =>
+          q._id === questionId ? { ...q, modIsCorrect: newValue } : q
+        ));
+      } else {
+        console.error('Failed to update moderator question correctness status');
+      }
+    } catch (error) {
+      console.error('Error updating moderator question correctness status:', error);
+    }
+  };
+
+  const handleModeratorChangeQuestionType = async (questionId: string, newType: string) => {
+    try {
+      const response = await fetch(`/api/questions/${questionId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ modQ_type: newType }),
+      });
+
+      if (response.ok) {
+        // Update local state
+        setQuestions(questions.map(q =>
+          q._id === questionId ? { ...q, modQ_type: newType } : q
+        ));
+      } else {
+        console.error('Failed to update moderator question type');
+      }
+    } catch (error) {
+      console.error('Error updating moderator question type:', error);
+    }
+  };
+
   const handleViewQuestion = (question: Question) => {
     setSelectedQuestion(question);
     setShowModal(true);
@@ -494,8 +618,8 @@ export default function Bank() {
     setSelectedQuestion(null);
   };
 
-  // If loading or not a reviewer, show loading
-  if (userLoading || (user && user.type !== 'reviewer')) {
+  // If loading or not a reviewer/moderator, show loading
+  if (userLoading || (user && user.type !== 'reviewer' && user.type !== 'moderator')) {
     return <div className={styles.loading}>Loading...</div>;
   }
 
@@ -646,8 +770,6 @@ export default function Bank() {
                   <>
                     <div className={styles.questionList}>
                       <div className={styles.questionHeader}>
-                        <div className={styles.questionId}>ID</div>
-                        <div className={styles.questionSubject}>Subject</div>
                         <div className={styles.questionTopic}>Topic</div>
                         <div className={styles.questionContent}>Question</div>
                         <div className={styles.questionDifficulty}>Difficulty</div>
@@ -660,8 +782,6 @@ export default function Bank() {
 
                       {questions.map((question) => (
                         <div key={question._id} className={styles.questionItem}>
-                          <div className={styles.questionId}>{question._id.substring(0, 8)}...</div>
-                          <div className={styles.questionSubject}>{question.subject}</div>
                           <div className={styles.questionTopic}>{question.topic}</div>
                           <div className={styles.questionContent}>
                             <button
@@ -672,55 +792,110 @@ export default function Bank() {
                             </button>
                           </div>
                           <div className={styles.questionDifficulty}>
-                            <select
-                              value={question.difficulty_level}
-                              onChange={(e) => handleChangeDifficulty(question._id, e.target.value)}
-                              className={styles.difficultySelect}
-                            >
-                              {filterOptions.difficulty_level?.content.map(level => (
-                                <option key={level} value={level}>{level}</option>
-                              ))}
-                            </select>
+                            {user?.type === 'moderator' ? (
+                              <select
+                                value={question.modDifficulty_level !== undefined ? question.modDifficulty_level : question.difficulty_level}
+                                onChange={(e) => handleModeratorChangeDifficulty(question._id, e.target.value)}
+                                className={styles.difficultySelect}
+                              >
+                                {filterOptions.difficulty_level?.content.map(level => (
+                                  <option key={level} value={level}>{level}</option>
+                                ))}
+                              </select>
+                            ) : (
+                              <select
+                                value={question.difficulty_level}
+                                onChange={(e) => handleChangeDifficulty(question._id, e.target.value)}
+                                className={styles.difficultySelect}
+                              >
+                                {filterOptions.difficulty_level?.content.map(level => (
+                                  <option key={level} value={level}>{level}</option>
+                                ))}
+                              </select>
+                            )}
                           </div>
                           <div className={styles.questionClass}>{question.class}</div>
                           <div className={styles.questionInCourse}>
-                            <StatusToggle
-                              value={question.inCourse}
-                              onToggle={(newValue) => handleToggleInCourse(question._id, newValue)}
-                              trueLabel="Yes"
-                              falseLabel="No"
-                              unmarkedLabel="Unmarked"
-                            />
+                            {user?.type === 'moderator' ? (
+                              <StatusToggle
+                                value={question.modInCourse !== undefined ? question.modInCourse : question.inCourse}
+                                onToggle={(newValue) => handleModeratorToggleInCourse(question._id, newValue)}
+                                trueLabel="Yes"
+                                falseLabel="No"
+                                unmarkedLabel="Unmarked"
+                              />
+                            ) : (
+                              <StatusToggle
+                                value={question.inCourse}
+                                onToggle={(newValue) => handleToggleInCourse(question._id, newValue)}
+                                trueLabel="Yes"
+                                falseLabel="No"
+                                unmarkedLabel="Unmarked"
+                              />
+                            )}
                           </div>
                           <div className={styles.questionHOTS}>
-                            <StatusToggle
-                              value={question.isHOTS}
-                              onToggle={(newValue) => handleToggleHOTS(question._id, newValue)}
-                              trueLabel="Yes"
-                              falseLabel="No"
-                              unmarkedLabel="Unmarked"
-                            />
+                            {user?.type === 'moderator' ? (
+                              <StatusToggle
+                                value={question.modIsHOTS !== undefined ? question.modIsHOTS : question.isHOTS}
+                                onToggle={(newValue) => handleModeratorToggleHOTS(question._id, newValue)}
+                                trueLabel="Yes"
+                                falseLabel="No"
+                                unmarkedLabel="Unmarked"
+                              />
+                            ) : (
+                              <StatusToggle
+                                value={question.isHOTS}
+                                onToggle={(newValue) => handleToggleHOTS(question._id, newValue)}
+                                trueLabel="Yes"
+                                falseLabel="No"
+                                unmarkedLabel="Unmarked"
+                              />
+                            )}
                           </div>
                           <div className={styles.questionCorrect}>
-                            <StatusToggle
-                              value={question.isCorrect}
-                              onToggle={(newValue) => handleToggleCorrect(question._id, newValue)}
-                              trueLabel="Yes"
-                              falseLabel="No"
-                              unmarkedLabel="Unmarked"
-                            />
+                            {user?.type === 'moderator' ? (
+                              <StatusToggle
+                                value={question.modIsCorrect !== undefined ? question.modIsCorrect : question.isCorrect}
+                                onToggle={(newValue) => handleModeratorToggleCorrect(question._id, newValue)}
+                                trueLabel="Yes"
+                                falseLabel="No"
+                                unmarkedLabel="Unmarked"
+                              />
+                            ) : (
+                              <StatusToggle
+                                value={question.isCorrect}
+                                onToggle={(newValue) => handleToggleCorrect(question._id, newValue)}
+                                trueLabel="Yes"
+                                falseLabel="No"
+                                unmarkedLabel="Unmarked"
+                              />
+                            )}
                           </div>
                           <div className={styles.questionType}>
-                            <select
-                              value={question.q_type || ''}
-                              onChange={(e) => handleChangeQuestionType(question._id, e.target.value)}
-                              className={styles.typeSelect}
-                            >
-                              <option value="">Select Type</option>
-                              {filterOptions.q_type?.content.map(type => (
-                                <option key={type} value={type}>{type}</option>
-                              ))}
-                            </select>
+                            {user?.type === 'moderator' ? (
+                              <select
+                                value={question.modQ_type !== undefined ? question.modQ_type : question.q_type || ''}
+                                onChange={(e) => handleModeratorChangeQuestionType(question._id, e.target.value)}
+                                className={styles.typeSelect}
+                              >
+                                <option value="">Select Type</option>
+                                {filterOptions.q_type?.content.map(type => (
+                                  <option key={type} value={type}>{type}</option>
+                                ))}
+                              </select>
+                            ) : (
+                              <select
+                                value={question.q_type || ''}
+                                onChange={(e) => handleChangeQuestionType(question._id, e.target.value)}
+                                className={styles.typeSelect}
+                              >
+                                <option value="">Select Type</option>
+                                {filterOptions.q_type?.content.map(type => (
+                                  <option key={type} value={type}>{type}</option>
+                                ))}
+                              </select>
+                            )}
                           </div>
                         </div>
                       ))}
