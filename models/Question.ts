@@ -42,7 +42,7 @@ type ContentPart = TextContent | MathContent | ListContent;
 
 export interface Question {
   _id: string | ObjectId;
-  education_board: string;
+  education_board?: string;
   class: string;
   subject: string;
   topic: string;
