@@ -27,7 +27,10 @@ export async function PATCH(
     const db = client.db();
 
     // Validate update data - only allow specific fields
-    const allowedFields = ['difficulty_level', 'inCourse', 'isHOTS', 'isCorrect', 'q_type'];
+    const allowedFields = [
+      'difficulty_level', 'inCourse', 'isHOTS', 'isCorrect', 'q_type',
+      'modDifficulty_level', 'modInCourse', 'modIsHOTS', 'modIsCorrect', 'modQ_type'
+    ];
     // eslint-disable-next-line
     const filteredUpdate: Record<string, any> = {};
 
