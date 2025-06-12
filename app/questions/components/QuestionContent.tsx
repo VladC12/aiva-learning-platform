@@ -1,21 +1,9 @@
 "use client";
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import styles from './page.module.css';
 import { Question } from '@/models/Question';
-import PDFQuestionDisplay from './components/PdfQuestionDisplay';
-import QuestionDisplay from './components/QuestionDisplay';
-
-// Main page component that uses Suspense boundary
-export default function QuestionsPage() {
-  return (
-    <div className={styles.questionsWrapper}>
-      <Suspense fallback={<div>Loading questions...</div>}>
-        <QuestionsContent />
-      </Suspense>
-    </div>
-  );
-}
+import PDFQuestionDisplay from './PdfQuestionDisplay';
+import QuestionDisplay from './QuestionDisplay';
 
 // Extracted component that uses useSearchParams
 function QuestionsContent() {
