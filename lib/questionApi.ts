@@ -1,4 +1,5 @@
-import { FilterState, PaginationState } from '../models/Question';
+import { ObjectId } from 'mongodb';
+import { FilterState } from '../models/Question';
 
 export const fetchFilters = async () => {
   const response = await fetch('/api/filters');
@@ -79,7 +80,8 @@ export const fetchQuestionCount = async (
 };
 
 export const updateQuestion = async (
-  questionId: string,
+  questionId: string | ObjectId,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updates: Record<string, any>
 ) => {
   const response = await fetch(`/api/questions/${questionId}`, {

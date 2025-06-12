@@ -41,14 +41,14 @@ interface ListContent {
 type ContentPart = TextContent | MathContent | ListContent;
 
 export interface Question {
-  _id: string;
+  _id: string | ObjectId;
+  education_board?: string;
+  class: string;
   subject: string;
   topic: string;
   question: string;
   solution: string;
   difficulty_level: string;
-  education_board: string;
-  class: string;
   question_pdf_blob?: string;
   solution_pdf_blob?: string;
   label?: string;

@@ -41,7 +41,7 @@ export default function QuestionList({
 
       {questions.map((question) => (
         <QuestionItem
-          key={question._id}
+          key={question._id as string}
           question={question}
           filterOptions={filterOptions}
           isModerator={isModerator}
