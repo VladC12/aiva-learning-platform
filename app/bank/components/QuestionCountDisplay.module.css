@@ -1,0 +1,22 @@
+.questionControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.questionCount {
+  font-weight: 500;
+}
+
+.limitSelector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.limitSelector select {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}

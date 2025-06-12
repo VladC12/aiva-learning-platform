@@ -1,0 +1,27 @@
+.questionList {
+  border: 1px solid #eaeaea;
+  border-radius: 6px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.questionHeader {
+  display: grid;
+  grid-template-columns: 0.7fr 1fr 1fr 1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
+  padding: 1rem;
+  background-color: #f3f4f6;
+  font-weight: 600;
+  color: #4b5563;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.emptyState {
+  padding: 3rem;
+  text-align: center;
+  color: #6b7280;
+}
