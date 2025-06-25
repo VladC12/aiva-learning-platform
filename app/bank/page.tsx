@@ -10,6 +10,7 @@ import FilterSidebar from './components/FilterSidebar';
 import QuestionList from './components/QuestionList';
 import PaginationControls from './components/PaginationControls';
 import QuestionCountDisplay from './components/QuestionCountDisplay';
+import QuestionSetBuilder from './components/QuestionSetBuilder';
 
 export default function Bank() {
   const router = useRouter();
@@ -17,6 +18,8 @@ export default function Bank() {
   const [filterOptions, setFilterOptions] = useState<Record<string, FilterOption>>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
+  const [showQuestionSetBuilder, setShowQuestionSetBuilder] = useState<boolean>(false);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
 
@@ -39,9 +42,9 @@ export default function Bank() {
     totalPages: 0
   });
 
-  // Redirect non-reviewer/non-moderator users
+  // Redirect non-reviewer/non-moderator/non-teacher users
   useEffect(() => {
-    if (!userLoading && user && user.type !== 'reviewer' && user.type !== 'moderator') {
+    if (!userLoading && user && user.type !== 'reviewer' && user.type !== 'moderator' && user.type !== 'teacher') {
       router.push('/');
     }
   }, [user, userLoading, router]);
@@ -123,7 +126,7 @@ export default function Bank() {
       }
     };
 
-    if (!userLoading && user && (user.type === 'reviewer' || user.type === 'moderator')) {
+    if (!userLoading && user && (user.type === 'reviewer' || user.type === 'moderator' || user.type === 'teacher')) {
       getQuestions();
     }
   }, [filters, pagination.page, pagination.limit, user, userLoading]);
@@ -147,7 +150,7 @@ export default function Bank() {
       }
     };
 
-    if (user?.type === 'reviewer' || user?.type === 'moderator') {
+    if (user?.type === 'reviewer' || user?.type === 'moderator' || user?.type === 'teacher') {
       getCount();
     }
   }, [filters, pagination.limit, user, userLoading]);
@@ -197,8 +200,32 @@ export default function Bank() {
     setSelectedQuestion(null);
   };
 
-  // If loading or not a reviewer/moderator, show loading
-  if (userLoading || (user && user.type !== 'reviewer' && user.type !== 'moderator')) {
+  const handleToggleSelectQuestion = (question: Question) => {
+    setSelectedQuestions(prev => {
+      const isAlreadySelected = prev.some(q => q._id === question._id);
+      if (isAlreadySelected) {
+        return prev.filter(q => q._id !== question._id);
+      } else {
+        return [...prev, question];
+      }
+    });
+  };
+
+  const handleCreateQuestionSet = () => {
+    setShowQuestionSetBuilder(prev => !prev);
+  };
+
+  const handleCloseQuestionSetBuilder = () => {
+    setShowQuestionSetBuilder(false);
+  };
+
+  const handleQuestionSetSuccess = () => {
+    setShowQuestionSetBuilder(false);
+    setSelectedQuestions([]);
+  };
+
+  // If loading or not a reviewer/moderator/teacher, show loading
+  if (userLoading || (user && user.type !== 'reviewer' && user.type !== 'moderator' && user.type !== 'teacher')) {
     return <div className={styles.loading}>Loading...</div>;
   }
 
@@ -216,7 +243,7 @@ export default function Bank() {
           <p>View and manage all questions in the database</p>
         </div>
 
-        <div className={styles.contentGrid}>
+        <div className={showQuestionSetBuilder ? styles.contentWithBuilder : styles.contentGrid}>
           {/* Filters sidebar */}
           <FilterSidebar
             filterOptions={filterOptions}
@@ -236,12 +263,44 @@ export default function Bank() {
                   onLimitChange={handleLimitChange}
                 />
 
+                {user.type === 'teacher' && (
+                  <div className={styles.selectionToolbar}>
+                    <div className={styles.selectionInfo}>
+                      {selectedQuestions.length > 0 ? (
+                        <>
+                          <span>{selectedQuestions.length} questions selected</span>
+                          <button 
+                            className={styles.deselectAllButton} 
+                            onClick={() => setSelectedQuestions([])}
+                            title="Deselect all questions"
+                          >
+                            Clear
+                          </button>
+                        </>
+                      ) : (
+                        'Select questions to create a question set'
+                      )}
+                    </div>
+                    <button
+                      className={styles.createSetButton}
+                      onClick={handleCreateQuestionSet}
+                    >
+                      {showQuestionSetBuilder ? 'Hide Builder' : 'Create Question Set'}
+                    </button>
+                  </div>
+                )}
+
                 <QuestionList
                   questions={questions}
                   filterOptions={filterOptions}
                   isModerator={user.type === 'moderator'}
+                  isReviewer={user.type === 'reviewer'}
+                  isReadOnly={user.type === 'teacher'}
                   onQuestionUpdate={handleQuestionUpdate}
                   onViewQuestion={handleViewQuestion}
+                  onToggleSelectQuestion={handleToggleSelectQuestion}
+                  selectedQuestions={selectedQuestions}
+                  isSelectable={user.type === 'teacher'}
                 />
 
                 {questions.length > 0 && (
@@ -254,6 +313,15 @@ export default function Bank() {
               </>
             )}
           </div>
+
+          {/* Question Set Builder Sidebar */}
+          {showQuestionSetBuilder && (
+            <QuestionSetBuilder
+              selectedQuestions={selectedQuestions}
+              onClose={handleCloseQuestionSetBuilder}
+              onSuccess={handleQuestionSetSuccess}
+            />
+          )}
         </div>
       </div>
 
