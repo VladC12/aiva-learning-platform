@@ -56,6 +56,7 @@ export interface Question {
   isHOTS?: boolean;
   isCorrect?: boolean;
   q_type?: string;
+  reviewer_note?: string;
   // Moderator fields
   modDifficulty_level?: string;
   modInCourse?: boolean;
