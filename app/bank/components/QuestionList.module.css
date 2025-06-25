@@ -10,7 +10,7 @@
 
 .questionHeader {
   display: grid;
-  grid-template-columns: 0.7fr 1fr 1fr 1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
+  grid-template-columns: 1fr 0.7fr 1fr 0.5fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
   padding: 1rem;
   background-color: #f3f4f6;
   font-weight: 600;
@@ -20,8 +20,20 @@
   z-index: 10;
 }
 
+.questionSelect {
+  width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .emptyState {
   padding: 3rem;
   text-align: center;
   color: #6b7280;
+}
+
+.questionNotes {
+  width: 100px;
+  text-align: center;
 }

@@ -6,16 +6,26 @@ interface QuestionListProps {
   questions: Question[];
   filterOptions: Record<string, FilterOption>;
   isModerator: boolean;
+  isReviewer: boolean;
+  isReadOnly?: boolean;
+  isSelectable?: boolean;
+  selectedQuestions?: Question[];
   onQuestionUpdate: (updatedQuestion: Question) => void;
   onViewQuestion: (question: Question) => void;
+  onToggleSelectQuestion?: (question: Question) => void;
 }
 
 export default function QuestionList({
   questions,
   filterOptions,
   isModerator,
+  isReviewer,
+  isReadOnly = false,
+  isSelectable = false,
+  selectedQuestions = [],
   onQuestionUpdate,
-  onViewQuestion
+  onViewQuestion,
+  onToggleSelectQuestion
 }: QuestionListProps) {
   if (questions.length === 0) {
     return (
@@ -25,10 +35,11 @@ export default function QuestionList({
       </div>
     );
   }
-
+  
   return (
     <div className={styles.questionList}>
       <div className={styles.questionHeader}>
+        {isSelectable && <div className={styles.questionSelect}></div>}
         <div className={styles.questionTopic}>Topic</div>
         <div className={styles.questionContent}>Question</div>
         <div className={styles.questionDifficulty}>Difficulty</div>
@@ -37,6 +48,7 @@ export default function QuestionList({
         <div className={styles.questionHOTS}>HOTS</div>
         <div className={styles.questionCorrect}>Correct</div>
         <div className={styles.questionType}>Type</div>
+        {isReviewer && <div className={styles.questionNotes}>Notes</div>}
       </div>
 
       {questions.map((question) => (
@@ -45,8 +57,13 @@ export default function QuestionList({
           question={question}
           filterOptions={filterOptions}
           isModerator={isModerator}
+          isReviewer={isReviewer}
+          isReadOnly={isReadOnly}
+          isSelectable={isSelectable}
+          isSelected={selectedQuestions.some(q => q._id === question._id)}
           onQuestionUpdate={onQuestionUpdate}
           onViewQuestion={onViewQuestion}
+          onSelectQuestion={onToggleSelectQuestion}
         />
       ))}
     </div>
