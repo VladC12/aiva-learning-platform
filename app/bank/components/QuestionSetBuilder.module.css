@@ -1,0 +1,248 @@
+.container {
+  width: 400px;
+  background-color: white;
+  border-left: 1px solid #e5e7eb;
+  overflow-y: hidden;
+  max-height: 74%;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 10;
+}
+
+.header h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 1.2rem;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.closeButton:hover {
+  color: #111827;
+}
+
+.form {
+  height: calc(100% - 60px);
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  font-size: 1rem;
+}
+
+.formatSelector {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.formatButton {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  background-color: white;
+  color: #4b5563;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.formatButton:hover {
+  background-color: #f3f4f6;
+}
+
+.formatButton.active {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+.sectionsContainer {
+  padding: 0.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.sectionsContainer h3 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: #374151;
+  font-size: 1rem;
+  padding: 0 0.5rem;
+}
+
+.section {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+  background-color: #f9fafb;
+}
+
+.section h4 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+.questionTypeGroup {
+  margin-bottom: 0.75rem;
+}
+
+.questionTypeGroup h5 {
+  margin-top: 0;
+  margin-bottom: 0.25rem;
+  color: #4b5563;
+  font-size: 0.85rem;
+}
+
+.questionList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+  background-color: white;
+}
+
+.questionItem {
+  display: flex;
+  align-items: center;
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.85rem;
+}
+
+.questionItem:last-child {
+  border-bottom: none;
+}
+
+.questionNumber {
+  width: 1.5rem;
+  text-align: center;
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.8rem;
+}
+
+.questionTopic {
+  flex: 1;
+  padding: 0 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.questionDifficulty {
+  padding: 0.15rem 0.35rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.questionType {
+  padding: 0.15rem 0.35rem;
+  margin-right: 0.35rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.errorMessage {
+  margin: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  background-color: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.85rem;
+}
+
+.successMessage {
+  margin: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  background-color: #d1fae5;
+  color: #065f46;
+  font-size: 0.85rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+  background-color: white;
+}
+
+.cancelButton, .saveButton {
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.cancelButton {
+  border: 1px solid #d1d5db;
+  background-color: white;
+  color: #4b5563;
+}
+
+.cancelButton:hover {
+  background-color: #f3f4f6;
+}
+
+.saveButton {
+  border: none;
+  background-color: #2563eb;
+  color: white;
+}
+
+.saveButton:hover {
+  background-color: #1d4ed8;
+}
+
+.saveButton:disabled, .cancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

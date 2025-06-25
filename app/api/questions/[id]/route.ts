@@ -29,7 +29,7 @@ export async function PATCH(
     // Validate update data - only allow specific fields
     const allowedFields = [
       'difficulty_level', 'inCourse', 'isHOTS', 'isCorrect', 'q_type',
-      'modDifficulty_level', 'modInCourse', 'modIsHOTS', 'modIsCorrect', 'modQ_type'
+      'modDifficulty_level', 'modInCourse', 'modIsHOTS', 'modIsCorrect', 'modQ_type', 'reviewer_note'
     ];
     // eslint-disable-next-line
     const filteredUpdate: Record<string, any> = {};
