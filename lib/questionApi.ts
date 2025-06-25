@@ -84,6 +84,8 @@ export const updateQuestion = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updates: Record<string, any>
 ) => {
+  console.log(`Updating question ${questionId} with:`, updates);
+  
   const response = await fetch(`/api/questions/${questionId}`, {
     method: 'PATCH',
     headers: {
@@ -93,7 +95,9 @@ export const updateQuestion = async (
   });
 
   if (!response.ok) {
-    throw new Error('Failed to update question');
+    const errorText = await response.text();
+    console.error('Update failed with response:', errorText);
+    throw new Error(`Failed to update question: ${errorText}`);
   }
 
   return await response.json();
