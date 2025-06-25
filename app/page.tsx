@@ -95,13 +95,6 @@ export default function Home() {
     fetchFilters();
   }, []);
 
-  // Add effect to redirect teachers to /auth/me
-  useEffect(() => {
-    if (!userLoading && user && user.type === 'teacher') {
-      router.push('/auth/me');
-    }
-  }, [user, userLoading, router]);
-
   const handleTopicsChange = (selected: string[]) => {
     setFilters(prev => ({
       ...prev,
