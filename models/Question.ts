@@ -56,10 +56,37 @@ export interface Question {
   isHOTS?: boolean;
   isCorrect?: boolean;
   q_type?: string;
+  reviewer_note?: string;
   // Moderator fields
   modDifficulty_level?: string;
   modInCourse?: boolean;
   modIsHOTS?: boolean;
   modIsCorrect?: boolean;
   modQ_type?: string;
+}
+
+export interface FilterOption {
+  _id: string;
+  content: string[];
+  label: string;
+  key: string;
+}
+
+export interface FilterState {
+  education_board: string;
+  class: string;
+  subject: string;
+  topic: string[];
+  difficulty_level: string[];
+  inCourse: string[];
+  isHOTS: string[];
+  isCorrect: string[];
+  q_type: string[];
+}
+
+export interface PaginationState {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
 }
