@@ -1,0 +1,29 @@
+.sidebar {
+  padding: 1.5rem;
+  background-color: #f9fafb;
+  border-right: 1px solid #f0f0f0;
+  overflow-y: auto;
+  max-height: calc(85vh - 200px);
+}
+
+.filterSection {
+  padding-bottom: 1rem;
+}
+
+.filterSection h2 {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.filterItem {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.filterItem label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #4b5563;
+}

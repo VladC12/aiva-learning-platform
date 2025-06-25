@@ -5,13 +5,14 @@ import styles from './StatusToggle.module.css';
 
 interface StatusToggleProps {
   value?: boolean;
-  onToggle: (newValue: boolean) => void;
+  onToggle?: (newValue: boolean) => void;
   trueLabel?: string;
   falseLabel?: string;
   unmarkedLabel?: string;
   trueBtnLabel?: string;
   falseBtnLabel?: string;
   className?: string;
+  readOnly?: boolean;
 }
 
 const StatusToggle: React.FC<StatusToggleProps> = ({
@@ -23,6 +24,7 @@ const StatusToggle: React.FC<StatusToggleProps> = ({
   trueBtnLabel = '✓',
   falseBtnLabel = '✕',
   className = '',
+  readOnly = false,
 }) => {
   // Determine status class based on value
   const statusClass = value !== undefined
@@ -43,24 +45,26 @@ const StatusToggle: React.FC<StatusToggleProps> = ({
       <span className={styles.statusLabel}>
         {label}
       </span>
-      <div className={styles.toggleButtons}>
-        <button 
-          className={`${styles.toggleIcon} ${styles.toggleYes} ${value === true ? styles.active : ''}`}
-          onClick={() => onToggle(true)}
-          title={`Set to ${trueLabel}`}
-          type="button"
-        >
-          {trueBtnLabel}
-        </button>
-        <button 
-          className={`${styles.toggleIcon} ${styles.toggleNo} ${value === false ? styles.active : ''}`}
-          onClick={() => onToggle(false)}
-          title={`Set to ${falseLabel}`}
-          type="button"
-        >
-          {falseBtnLabel}
-        </button>
-      </div>
+      {!readOnly && onToggle && (
+        <div className={styles.toggleButtons}>
+          <button 
+            className={`${styles.toggleIcon} ${styles.toggleYes} ${value === true ? styles.active : ''}`}
+            onClick={() => onToggle(true)}
+            title={`Set to ${trueLabel}`}
+            type="button"
+          >
+            {trueBtnLabel}
+          </button>
+          <button 
+            className={`${styles.toggleIcon} ${styles.toggleNo} ${value === false ? styles.active : ''}`}
+            onClick={() => onToggle(false)}
+            title={`Set to ${falseLabel}`}
+            type="button"
+          >
+            {falseBtnLabel}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
