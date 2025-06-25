@@ -1,13 +1,31 @@
 .questionItem {
   display: grid;
-  grid-template-columns: 0.7fr 1fr 1fr 1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
+  grid-template-columns: 1fr 0.7fr 1fr 0.5fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
+  gap: 0.5rem;
   padding: 1rem;
   border-top: 1px solid #eaeaea;
   min-height: 60px;
 }
 
+.questionItem.selected {
+  background-color: #e9f5fe;
+}
+
 .questionItem:hover {
   background-color: #f9fafb;
+}
+
+.questionSelect {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: 0.5rem;
+}
+
+.questionSelect input {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
 }
 
 .questionTopic {
@@ -45,4 +63,104 @@
   border: 1px solid #d1d5db;
   background-color: white;
   font-size: 0.9rem;
+  min-width: 80px;
+}
+
+.questionNotes {
+  width: 100px;
+  text-align: center;
+}
+
+.noteButton {
+  padding: 0.25rem 0.5rem;
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  color: #4b5563;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.noteButton:hover {
+  background-color: #e5e7eb;
+  color: #1f2937;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.noteModal {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.noteModal h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.noteTextarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.noteModalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.cancelButton, .saveButton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.cancelButton {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background-color: #e5e7eb;
+}
+
+.saveButton {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+}
+
+.saveButton:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.cancelButton:disabled,
+.saveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
