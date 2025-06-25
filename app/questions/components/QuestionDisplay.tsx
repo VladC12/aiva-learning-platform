@@ -5,9 +5,18 @@ import MarkdownMathRenderer from 'app/components/MarkdownMathRenderer';
 import { useUser } from 'context/UserContext';
 import { Question } from '@/models/Question';
 import styles from '../page.module.css';
+import PdfGenerationControls from './PdfGenerationControls';
 
 // Regular Question display component
-function QuestionDisplay({ questions }: { questions: Question[] }) {
+function QuestionDisplay({ 
+    questions, 
+    questionSetLabel, 
+    canGeneratePdf = false 
+}: { 
+    questions: Question[];
+    questionSetLabel?: string;
+    canGeneratePdf?: boolean;
+}) {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [showSolution, setShowSolution] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,6 +72,13 @@ function QuestionDisplay({ questions }: { questions: Question[] }) {
 
     return (
         <div className={styles.container}>
+            {canGeneratePdf && <div className={styles.pdfControls}>
+                <PdfGenerationControls 
+                    questions={questions} 
+                    questionSetLabel={questionSetLabel}
+                />
+            </div>}
+            
             <div className={styles.sidebar}>
                 <div className={styles.questionCount}>
                     Question: {`${currentQuestionIndex + 1} / ${questions.length}`}

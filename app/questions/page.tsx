@@ -5,6 +5,7 @@ import styles from './page.module.css';
 import { Question } from '@/models/Question';
 import PDFQuestionDisplay from './components/PdfQuestionDisplay';
 import QuestionDisplay from './components/QuestionDisplay';
+import { useUser } from 'context/UserContext';
 
 // Main page component that uses Suspense boundary
 export default function QuestionsPage() {
@@ -26,10 +27,12 @@ function QuestionsContent() {
     solution_pdf_blob: string;
     label: string;
   } | null>(null);
+  const [questionSetLabel, setQuestionSetLabel] = useState<string>('Question Set');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useUser();
 
   useEffect(() => {
     // Check for required URL parameters
@@ -87,7 +90,10 @@ function QuestionsContent() {
           }
 
           const data = await response.json();
-          setQuestions(data);
+          setQuestions(data.questions || data);
+          if (data.label) {
+            setQuestionSetLabel(data.label);
+          }
           setPdfQuestionSet(null);
         } else {
           // Build parameters object from search params for regular filtering
@@ -146,5 +152,14 @@ function QuestionsContent() {
     return <div>No questions found</div>;
   }
 
-  return <QuestionDisplay questions={questions} />;
+  // Allow PDF generation for non-student users
+  const canGeneratePdf = user ? user.type !== 'student' : false;
+
+  return (
+    <QuestionDisplay 
+      questions={questions} 
+      questionSetLabel={questionSetLabel}
+      canGeneratePdf={canGeneratePdf}
+    />
+  );
 }
