@@ -5,6 +5,7 @@ import { Question } from '@/models/Question';
 // Add the necessary types for jsPDF-autotable
 declare module 'jspdf' {
   interface jsPDF {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     autoTable: (options: any) => jsPDF;
   }
 }
