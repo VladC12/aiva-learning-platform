@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Question } from '../../../models/Question';
-import { QuestionSet } from '../../../models/QuestionSet';
 import styles from './QuestionSetBuilder.module.css';
 
 interface QuestionSetBuilderProps {
