@@ -137,8 +137,10 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   });
 }
 
-export default {
+const emailSerivce = {
   configureEmailService,
   sendEmail,
   sendPasswordResetEmail
-};
+}
+
+export default emailSerivce;

@@ -25,7 +25,7 @@ interface FilterState {
 
 export default function Home() {
   const router = useRouter();
-  const { user, loading: userLoading } = useUser(); // Get user and loading state from context
+  const { loading: userLoading } = useUser(); // Get user and loading state from context
   const [filterOptions, setFilterOptions] = useState<Record<string, FilterOption>>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
   
