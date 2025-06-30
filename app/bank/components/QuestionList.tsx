@@ -40,6 +40,7 @@ export default function QuestionList({
     <div className={styles.questionList}>
       <div className={styles.questionHeader}>
         {isSelectable && <div className={styles.questionSelect}></div>}
+        <div className={styles.questionNumber}>Nr</div>
         <div className={styles.questionTopic}>Topic</div>
         <div className={styles.questionContent}>Question</div>
         <div className={styles.questionDifficulty}>Difficulty</div>

@@ -135,6 +135,9 @@ export default function QuestionItem({
           />
         </div>
       )}
+      <div className={styles.questionNumber}>
+        {question.q_number !== undefined ? question.q_number : '-'}
+      </div>
       <div className={styles.questionTopic}>{question.topic}</div>
       <div className={styles.questionContent}>
         <button

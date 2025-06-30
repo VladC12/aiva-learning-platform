@@ -52,6 +52,7 @@ export interface Question {
   question_pdf_blob?: string;
   solution_pdf_blob?: string;
   label?: string;
+  q_number?: number;
   inCourse?: boolean;
   isHOTS?: boolean;
   isCorrect?: boolean;
