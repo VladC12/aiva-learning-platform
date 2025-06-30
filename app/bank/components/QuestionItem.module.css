@@ -1,6 +1,6 @@
 .questionItem {
   display: grid;
-  grid-template-columns: 1fr 0.7fr 1fr 0.5fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
+  grid-template-columns: 0.2fr 1fr 0.7fr 1fr 0.5fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
   gap: 0.5rem;
   padding: 1rem;
   border-top: 1px solid #eaeaea;
@@ -16,7 +16,7 @@
 }
 
 .questionSelect {
-  display: flex;
+  /* display: flex; */
   align-items: center;
   justify-content: center;
   padding-right: 0.5rem;

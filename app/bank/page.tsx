@@ -32,7 +32,8 @@ export default function Bank() {
     inCourse: [],
     isHOTS: [],
     isCorrect: [],
-    q_type: []
+    q_type: [],
+    q_number: ''
   });
 
   const [pagination, setPagination] = useState<PaginationState>({
