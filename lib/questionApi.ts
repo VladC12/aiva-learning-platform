@@ -27,6 +27,7 @@ export const fetchQuestions = async (
     isHOTS: filters.isHOTS.join(','),
     isCorrect: filters.isCorrect.join(','),
     q_type: filters.q_type.join(','),
+    q_number: filters.q_number || '', // Ensure q_number is included
     // For moderators, only show questions that are marked as in course and correct
     moderatorView: isModerator
   };

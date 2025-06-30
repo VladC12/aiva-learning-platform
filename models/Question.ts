@@ -7,6 +7,7 @@ export interface QuestionQuery {
   topic?: { $in: string[] };
   difficulty_level?: { $in: string[] };
   q_type?: { $in: string[] };
+  q_number?: number | { $eq: number };
   inCourse?: boolean | { $ne: undefined };
   isHOTS?: boolean | { $ne: undefined };
   isCorrect?: boolean | { $ne: undefined };
@@ -52,6 +53,7 @@ export interface Question {
   question_pdf_blob?: string;
   solution_pdf_blob?: string;
   label?: string;
+  q_number?: number;
   inCourse?: boolean;
   isHOTS?: boolean;
   isCorrect?: boolean;
@@ -82,6 +84,7 @@ export interface FilterState {
   isHOTS: string[];
   isCorrect: string[];
   q_type: string[];
+  q_number: string;
 }
 
 export interface PaginationState {

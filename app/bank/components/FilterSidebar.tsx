@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { FilterOption, FilterState } from '../../../models/Question';
 import MultiSelect from '../../components/MultiSelect';
 import Dropdown from '../../components/Dropdown';
@@ -14,6 +15,14 @@ export default function FilterSidebar({
   filters,
   onFilterChange
 }: FilterSidebarProps) {
+  const [questionNumberInput, setQuestionNumberInput] = useState(filters.q_number || '');
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Update local state when filters prop changes (to handle external filter resets)
+  useEffect(() => {
+    setQuestionNumberInput(filters.q_number || '');
+  }, [filters.q_number]);
+
   const handleTopicsChange = (selected: string[]) => {
     onFilterChange({ topic: selected });
   };
@@ -49,6 +58,24 @@ export default function FilterSidebar({
   const handleQuestionTypeChange = (selected: string[]) => {
     onFilterChange({ q_type: selected });
   };
+  
+  const handleQuestionNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Only update if the value is empty or a valid number
+    const value = e.target.value;
+    if (value === '' || /^\d+$/.test(value)) {
+      setQuestionNumberInput(value);
+      
+      // Clear any existing timeout
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      
+      // Set a new timeout
+      debounceTimerRef.current = setTimeout(() => {
+        onFilterChange({ q_number: value });
+      }, 500); // 500ms debounce time
+    }
+  };
 
   return (
     <div className={styles.sidebar}>
@@ -65,6 +92,18 @@ export default function FilterSidebar({
               label: item
             })) || []}
             placeholder="Select Education Board"
+          />
+        </div>
+
+        <div className={styles.filterItem}>
+          <label htmlFor="q_number">Question Number</label>
+          <input
+            type="number"
+            id="q_number"
+            value={questionNumberInput}
+            onChange={handleQuestionNumberChange}
+            className={styles.numberInput}
+            placeholder="Filter by question number"
           />
         </div>
 
