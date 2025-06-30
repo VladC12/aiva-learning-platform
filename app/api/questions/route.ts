@@ -16,6 +16,16 @@ export async function POST(request: NextRequest) {
     if (params.education_board) query.education_board = params.education_board;
     if (params.class) query.class = params.class;
     if (params.subject) query.subject = params.subject;
+    if (params.q_number) {
+      // If q_number is provided, filter by exact match
+      const qNumber = parseInt(params.q_number);
+      if (!isNaN(qNumber)) {
+        query.q_number = { $eq: qNumber };
+      } else {
+        // If q_number is not a valid number, ignore it
+        delete query.q_number;
+      }
+    }
 
     // Handle comma-separated topics with $in operator
     // If topic is missing or empty, don't filter by topic (include all topics)
