@@ -25,7 +25,7 @@ interface FilterState {
 
 export default function Home() {
   const router = useRouter();
-  const { loading: userLoading } = useUser(); // Get user and loading state from context
+  const { user, loading: userLoading } = useUser(); // Get user and loading state from context
   const [filterOptions, setFilterOptions] = useState<Record<string, FilterOption>>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
   
@@ -53,7 +53,14 @@ export default function Home() {
         data.forEach((filter: FilterOption) => {
           filtersObj[filter.key] = filter;
         });
-        
+
+        // Filter education_board options based on user permissions if applicable
+        if (user?.education_board && Array.isArray(user.education_board) && user.education_board.length > 0 && filtersObj.education_board) {
+          filtersObj.education_board.content = filtersObj.education_board.content.filter(
+            board => user.education_board!.includes(board)
+          );
+        }
+
         setFilterOptions(filtersObj);
         
         // Set default values for filters with only one option
@@ -93,7 +100,7 @@ export default function Home() {
     };
 
     fetchFilters();
-  }, []);
+  }, [user]);
 
   const handleTopicsChange = (selected: string[]) => {
     setFilters(prev => ({
@@ -133,7 +140,7 @@ export default function Home() {
   if (userLoading || isLoading) {
     return <div className={styles.loading}>Loading...</div>;
   }
-
+  
   return (
     <main className={styles.main}>
       <h1>Question Generator</h1>
@@ -143,8 +150,7 @@ export default function Home() {
             <Dropdown
               label={filterOptions.education_board?.label || "Education Board"}
               value={filters.education_board}
-              // onChange={(value) => setFilters(prev => ({ ...prev, education_board: value }))}
-              onChange={(_value) => setFilters(prev => prev)}
+              onChange={(value) => setFilters(prev => ({ ...prev, education_board: value }))}
               options={filterOptions.education_board?.content.map(item => ({
                 value: item,
                 label: item
@@ -156,8 +162,7 @@ export default function Home() {
             <Dropdown
               label={filterOptions.class?.label || "Class"}
               value={filters.class}
-              onChange={(_value) => setFilters(prev => prev)}
-              // onChange={(value) => setFilters(prev => ({ ...prev, class: value }))}
+              onChange={(value) => setFilters(prev => ({ ...prev, class: value }))}
               options={filterOptions.class?.content.map(item => ({
                 value: item,
                 label: item
