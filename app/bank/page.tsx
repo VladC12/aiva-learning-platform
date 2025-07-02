@@ -109,7 +109,7 @@ export default function Bank() {
     };
 
     getFilters();
-  }, []);
+  }, [user]);
 
   // Fetch questions based on filters and pagination
   useEffect(() => {

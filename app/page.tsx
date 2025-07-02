@@ -100,7 +100,7 @@ export default function Home() {
     };
 
     fetchFilters();
-  }, []);
+  }, [user]);
 
   const handleTopicsChange = (selected: string[]) => {
     setFilters(prev => ({
