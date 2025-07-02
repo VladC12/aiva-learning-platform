@@ -63,6 +63,13 @@ export default function Bank() {
           filtersObj[filter.key] = filter;
         });
 
+        // Filter education_board options based on user permissions if applicable
+        if (user?.education_board && Array.isArray(user.education_board) && user.education_board.length > 0 && filtersObj.education_board) {
+          filtersObj.education_board.content = filtersObj.education_board.content.filter(
+            board => user.education_board!.includes(board)
+          );
+        }
+
         setFilterOptions(filtersObj);
 
         // Set default values for filters with only one option
