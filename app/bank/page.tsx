@@ -321,8 +321,6 @@ export default function Bank() {
               </>
             )}
           </div>
-
-          {/* Question Set Builder Sidebar */}
           {showQuestionSetBuilder && (
             <QuestionSetBuilder
               selectedQuestions={selectedQuestions}
