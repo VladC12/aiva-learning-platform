@@ -11,7 +11,7 @@ export interface UserData {
   first_name?: string;
   middle_name?: string;
   last_name?: string;
-  education_board?: string;
+  education_board?: string[];
   country_of_residence?: string;
   question_tracking?: {
     [questionId: string]: {
@@ -52,7 +52,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
+  
   // Function to fetch the user data
   const refreshUser = async () => {
     try {
