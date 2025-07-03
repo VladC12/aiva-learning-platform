@@ -22,6 +22,7 @@ export default function Bank() {
   const [showQuestionSetBuilder, setShowQuestionSetBuilder] = useState<boolean>(false);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [allFilters, setAllFilters] = useState<FilterOption[]>([]);
 
   const [filters, setFilters] = useState<FilterState>({
     education_board: '',
@@ -57,6 +58,9 @@ export default function Bank() {
         setIsLoading(true);
         const data = await fetchFilters();
 
+        // Store all filters for later use
+        setAllFilters(data);
+
         // Convert array to an object with keys for easier access
         const filtersObj: Record<string, FilterOption> = {};
         data.forEach((filter: FilterOption) => {
@@ -73,25 +77,58 @@ export default function Bank() {
         setFilterOptions(filtersObj);
 
         // Set default values for filters with only one option
-        if (filtersObj.education_board && filtersObj.education_board.content.length === 1) {
+        if (filtersObj.education_board) {
+          // Determine the default education board
+          let defaultBoard = '';
+          
+          // First priority: Use user permissions if available
+          if (user?.education_board && Array.isArray(user.education_board) && user.education_board.length > 0) {
+            // Find the first board the user has access to
+            defaultBoard = user.education_board[0];
+          } 
+          // Second priority: Use the first available board
+          else if (filtersObj.education_board.content.length > 0) {
+            defaultBoard = filtersObj.education_board.content[0];
+          }
+          
+          // Set the default board
           setFilters(prev => ({
             ...prev,
-            education_board: filtersObj.education_board.content[0]
+            education_board: defaultBoard
           }));
-        }
-
-        if (filtersObj.class && filtersObj.class.content.length === 1) {
-          setFilters(prev => ({
-            ...prev,
-            class: filtersObj.class.content[0]
-          }));
-        }
-
-        if (filtersObj.subject && filtersObj.subject.content.length === 1) {
-          setFilters(prev => ({
-            ...prev,
-            subject: filtersObj.subject.content[0]
-          }));
+          
+          // Update the filter options based on the selected board
+          if (defaultBoard) {
+            // Find relevant child filters for this education board
+            const relevantFilters = data.filter((filter: FilterOption) => 
+              !filter.parent || filter.parent === defaultBoard
+            );
+            
+            // Update filter options
+            const updatedFilterOptions = { ...filtersObj };
+            relevantFilters.forEach((filter: FilterOption) => {
+              updatedFilterOptions[filter.key] = filter;
+            });
+            
+            setFilterOptions(updatedFilterOptions);
+            
+            // Set default values for class and subject if they have only one option
+            const classFilter = relevantFilters.find((f: FilterOption) => f.key === 'class' && f.parent === defaultBoard);
+            if (classFilter && classFilter.content.length === 1) {
+              setFilters(prev => ({
+                ...prev,
+                class: classFilter.content[0]
+              }));
+            }
+            
+            const subjectFilter = relevantFilters.find((f: FilterOption) => f.key === 'subject' && f.parent === defaultBoard);
+            if (subjectFilter && subjectFilter.content.length === 1) {
+              setFilters(prev => ({
+                ...prev,
+                subject: subjectFilter.content[0]
+              }));
+            }
+          }
         }
 
         // Set default difficulty levels if available
@@ -163,11 +200,66 @@ export default function Bank() {
     }
   }, [filters, pagination.limit, user, userLoading]);
 
+  // Effect to update filter options when education_board changes
+  useEffect(() => {
+    if (filters.education_board && allFilters.length > 0) {
+      // Find relevant child filters for this education board
+      const selectedBoard = filters.education_board;
+      const relevantFilters = allFilters.filter((filter: FilterOption) => 
+        !filter.parent || filter.parent === selectedBoard
+      );
+      
+      // Update filter options
+      const updatedFilterOptions: Record<string, FilterOption> = { 
+        education_board: filterOptions.education_board // Keep the original education_board filter
+      };
+      
+      // Add all relevant filters (global ones and ones specific to this board)
+      relevantFilters.forEach((filter: FilterOption) => {
+        updatedFilterOptions[filter.key] = filter;
+      });
+      
+      setFilterOptions(updatedFilterOptions);
+    }
+  }, [filters.education_board, allFilters, filterOptions.education_board]);
+
   const handleFilterChange = (newFilters: Partial<FilterState>) => {
-    setFilters(prev => ({
-      ...prev,
-      ...newFilters
-    }));
+    // Check if education_board has changed
+    if (newFilters.education_board && newFilters.education_board !== filters.education_board) {
+      const selectedBoard = newFilters.education_board;
+      
+      // Find relevant child filters for this education board
+      const relevantFilters = allFilters.filter((filter: FilterOption) => 
+        !filter.parent || filter.parent === selectedBoard
+      );
+      
+      // Update filter options
+      const updatedFilterOptions: Record<string, FilterOption> = { 
+        education_board: filterOptions.education_board // Keep the original education_board filter
+      };
+      
+      // Add all relevant filters (global ones and ones specific to this board)
+      relevantFilters.forEach((filter: FilterOption) => {
+        updatedFilterOptions[filter.key] = filter;
+      });
+      
+      setFilterOptions(updatedFilterOptions);
+      
+      // Reset child filters when education board changes
+      setFilters(prev => ({
+        ...prev,
+        ...newFilters,
+        class: '',
+        subject: '',
+        topic: [],
+        q_type: []
+      }));
+    } else {
+      setFilters(prev => ({
+        ...prev,
+        ...newFilters
+      }));
+    }
     
     // Reset to first page when filter changes
     setPagination(prev => ({
