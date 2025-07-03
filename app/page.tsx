@@ -12,6 +12,7 @@ interface FilterOption {
   content: string[];
   label: string;
   key: string;
+  parent?: string; // Add parent field to track which education board this filter belongs to
 }
 
 interface FilterState {
@@ -28,6 +29,8 @@ export default function Home() {
   const { user, loading: userLoading } = useUser(); // Get user and loading state from context
   const [filterOptions, setFilterOptions] = useState<Record<string, FilterOption>>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  // Track all available filters separately to keep original data
+  const [allFilters, setAllFilters] = useState<FilterOption[]>([]);
   
   const [filters, setFilters] = useState<FilterState>({
     education_board: '',
@@ -37,7 +40,7 @@ export default function Home() {
     difficulty_level: [],
     q_type: []
   });
-
+  
   useEffect(() => {
     const fetchFilters = async () => {
       try {
@@ -47,6 +50,9 @@ export default function Home() {
           throw new Error('Failed to fetch filters');
         }
         const data = await response.json();
+        
+        // Store all filters for later use
+        setAllFilters(data);
         
         // Convert array to an object with keys for easier access
         const filtersObj: Record<string, FilterOption> = {};
@@ -63,26 +69,59 @@ export default function Home() {
 
         setFilterOptions(filtersObj);
         
-        // Set default values for filters with only one option
-        if (filtersObj.education_board && filtersObj.education_board.content.length === 1) {
+        // Set default values for filter
+        if (filtersObj.education_board) {
+          // Determine the default education board
+          let defaultBoard = '';
+          
+          // First priority: Use user permissions if available
+          if (user?.education_board && Array.isArray(user.education_board) && user.education_board.length > 0) {
+            // Find the first board the user has access to
+            defaultBoard = user.education_board[0];
+          } 
+          // Second priority: Use the first available board
+          else if (filtersObj.education_board.content.length > 0) {
+            defaultBoard = filtersObj.education_board.content[0];
+          }
+          
+          // Set the default board
           setFilters(prev => ({
             ...prev,
-            education_board: filtersObj.education_board.content[0]
+            education_board: defaultBoard
           }));
-        }
-        
-        if (filtersObj.class && filtersObj.class.content.length === 1) {
-          setFilters(prev => ({
-            ...prev,
-            class: filtersObj.class.content[0]
-          }));
-        }
-        
-        if (filtersObj.subject && filtersObj.subject.content.length === 1) {
-          setFilters(prev => ({
-            ...prev,
-            subject: filtersObj.subject.content[0]
-          }));
+          
+          // Update the filter options based on the selected board
+          if (defaultBoard) {
+            // Find relevant child filters for this education board
+            const relevantFilters = data.filter((filter: FilterOption) => 
+              !filter.parent || filter.parent === defaultBoard
+            );
+            
+            // Update filter options
+            const updatedFilterOptions = { ...filtersObj };
+            relevantFilters.forEach((filter: FilterOption) => {
+              updatedFilterOptions[filter.key] = filter;
+            });
+            
+            setFilterOptions(updatedFilterOptions);
+            
+            // Set default values for class and subject if they have only one option
+            const classFilter = relevantFilters.find((f: FilterOption) => f.key === 'class' && f.parent === defaultBoard);
+            if (classFilter && classFilter.content.length === 1) {
+              setFilters(prev => ({
+                ...prev,
+                class: classFilter.content[0]
+              }));
+            }
+            
+            const subjectFilter = relevantFilters.find((f: FilterOption) => f.key === 'subject' && f.parent === defaultBoard);
+            if (subjectFilter && subjectFilter.content.length === 1) {
+              setFilters(prev => ({
+                ...prev,
+                subject: subjectFilter.content[0]
+              }));
+            }
+          }
         }
         
         // Set default difficulty levels if available
@@ -101,6 +140,59 @@ export default function Home() {
 
     fetchFilters();
   }, [user]);
+
+  // Effect to update filter options when education_board changes
+  useEffect(() => {
+    if (filters.education_board && allFilters.length > 0) {
+      // Find relevant child filters for this education board
+      const selectedBoard = filters.education_board;
+      const relevantFilters = allFilters.filter((filter: FilterOption) => 
+        !filter.parent || filter.parent === selectedBoard
+      );
+      
+      // Update filter options
+      const updatedFilterOptions: Record<string, FilterOption> = { 
+        education_board: filterOptions.education_board // Keep the original education_board filter
+      };
+      
+      // Add all relevant filters (global ones and ones specific to this board)
+      relevantFilters.forEach((filter: FilterOption) => {
+        updatedFilterOptions[filter.key] = filter;
+      });
+      
+      setFilterOptions(updatedFilterOptions);
+    }
+  }, [filters.education_board, allFilters, filterOptions.education_board]);
+
+  const handleEducationBoardChange = (selectedBoard: string) => {
+    // Update the education_board filter
+    setFilters(prev => ({
+      ...prev,
+      education_board: selectedBoard,
+      // Reset child filters when education board changes
+      class: '',
+      subject: '',
+      topic: [],
+      q_type: []
+    }));
+
+    // Find relevant child filters for this education board
+    const relevantFilters = allFilters.filter((filter: FilterOption) => 
+      !filter.parent || filter.parent === selectedBoard
+    );
+    
+    // Update filter options
+    const updatedFilterOptions: Record<string, FilterOption> = { 
+      education_board: filterOptions.education_board // Keep the original education_board filter
+    };
+    
+    // Add all relevant filters (global ones and ones specific to this board)
+    relevantFilters.forEach((filter: FilterOption) => {
+      updatedFilterOptions[filter.key] = filter;
+    });
+    
+    setFilterOptions(updatedFilterOptions);
+  };
 
   const handleTopicsChange = (selected: string[]) => {
     setFilters(prev => ({
@@ -140,7 +232,7 @@ export default function Home() {
   if (userLoading || isLoading) {
     return <div className={styles.loading}>Loading...</div>;
   }
-  
+
   return (
     <main className={styles.main}>
       <h1>Question Generator</h1>
@@ -150,7 +242,7 @@ export default function Home() {
             <Dropdown
               label={filterOptions.education_board?.label || "Education Board"}
               value={filters.education_board}
-              onChange={(value) => setFilters(prev => ({ ...prev, education_board: value }))}
+              onChange={handleEducationBoardChange}
               options={filterOptions.education_board?.content.map(item => ({
                 value: item,
                 label: item
@@ -174,13 +266,12 @@ export default function Home() {
             <Dropdown
               label={filterOptions.subject?.label || "Subject"}
               value={filters.subject}
-              // onChange={(value) => {
-              //   setFilters(prev => ({
-              //     ...prev,
-              //     subject: value
-              //   }));
-              // }}
-              onChange={(_value) => setFilters(prev => prev)}
+              onChange={(value) => {
+                setFilters(prev => ({
+                  ...prev,
+                  subject: value
+                }));
+              }}
               options={filterOptions.subject?.content.map(item => ({
                 value: item,
                 label: item
