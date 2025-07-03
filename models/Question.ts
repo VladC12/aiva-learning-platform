@@ -72,6 +72,7 @@ export interface FilterOption {
   content: string[];
   label: string;
   key: string;
+  parent?: string; // Add parent field to indicate which education board this filter belongs to
 }
 
 export interface FilterState {
