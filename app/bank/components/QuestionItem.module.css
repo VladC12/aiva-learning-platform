@@ -164,3 +164,8 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.disabledCheckbox {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
