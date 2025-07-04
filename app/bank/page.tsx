@@ -303,44 +303,9 @@ export default function Bank() {
   const handleToggleSelectQuestion = (question: Question) => {
     setSelectedQuestions(prev => {
       const isAlreadySelected = prev.some(q => q._id === question._id);
-      
-      // If question is already selected, just remove it
       if (isAlreadySelected) {
         return prev.filter(q => q._id !== question._id);
       } else {
-        // Check limits for DPS format
-        const qType = question.q_type || '';
-        
-        // Count how many questions of each type we already have
-        const counts = prev.reduce((acc, q) => {
-          const type = q.q_type || '';
-          if (!acc[type]) acc[type] = 0;
-          acc[type]++;
-          return acc;
-        }, {} as Record<string, number>);
-        
-        // Check limits for each question type
-        if (qType === 'MCQ' && (counts['MCQ'] || 0) >= 18) {
-          alert('You can only select up to 18 MCQ questions for Section A');
-          return prev;
-        } else if (qType === 'A-R' && (counts['A-R'] || 0) >= 2) {
-          alert('You can only select up to 2 A-R questions for Section A');
-          return prev;
-        } else if (qType === 'VSA' && (counts['VSA'] || 0) >= 5) {
-          alert('You can only select up to 5 VSA questions for Section B');
-          return prev;
-        } else if (qType === 'SA' && (counts['SA'] || 0) >= 6) {
-          alert('You can only select up to 6 SA questions for Section C');
-          return prev;
-        } else if (qType === 'LA' && (counts['LA'] || 0) >= 4) {
-          alert('You can only select up to 4 LA questions for Section D');
-          return prev;
-        } else if (qType === 'Case-Study' && (counts['Case-Study'] || 0) >= 3) {
-          alert('You can only select up to 3 Case-Study questions for Section E');
-          return prev;
-        }
-        
-        // If we pass all the checks, add the question
         return [...prev, question];
       }
     });
@@ -358,21 +323,6 @@ export default function Bank() {
     setShowQuestionSetBuilder(false);
     setSelectedQuestions([]);
   };
-
-  // Handle events for updating selected questions from QuestionSetBuilder
-  useEffect(() => {
-    const handleUpdateSelectedQuestions = (event: CustomEvent) => {
-      if (event.detail && Array.isArray(event.detail)) {
-        setSelectedQuestions(event.detail);
-      }
-    };
-    
-    window.addEventListener('update-selected-questions', handleUpdateSelectedQuestions as EventListener);
-    
-    return () => {
-      window.removeEventListener('update-selected-questions', handleUpdateSelectedQuestions as EventListener);
-    };
-  }, []);
 
   // If loading or not a reviewer/moderator/teacher, show loading
   if (userLoading || (user && user.type !== 'reviewer' && user.type !== 'moderator' && user.type !== 'teacher')) {
@@ -468,7 +418,6 @@ export default function Bank() {
               selectedQuestions={selectedQuestions}
               onClose={handleCloseQuestionSetBuilder}
               onSuccess={handleQuestionSetSuccess}
-              onViewQuestion={handleViewQuestion}
             />
           )}
         </div>

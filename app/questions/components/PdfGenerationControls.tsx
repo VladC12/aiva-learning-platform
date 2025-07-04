@@ -17,11 +17,14 @@ const PdfGenerationControls: React.FC<PdfGenerationControlsProps> = ({
     try {
       setIsGenerating(true);
       
-      // Import HTML PDF generator
-      const { generateQuestionPDF } = await import('@/lib/htmlPdfGenerator');
+      // Dynamically import to avoid including in client bundle if not needed
+      const { generateQuestionPDF, downloadPDF } = await import('@/lib/pdfGenerator');
       
       const title = `${questionSetLabel} ${includeSolutions ? '(with Solutions)' : '(Questions Only)'}`;
-      await generateQuestionPDF(questions, title, includeSolutions);
+      const doc = await generateQuestionPDF(questions, title, includeSolutions);
+      
+      const filename = `${questionSetLabel.replace(/\s+/g, '_')}_${includeSolutions ? 'with_solutions' : 'questions_only'}.pdf`;
+      downloadPDF(doc, filename);
       
     } catch (error) {
       console.error('Error generating PDF:', error);

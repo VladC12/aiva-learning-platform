@@ -15,8 +15,6 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/nodemailer": "^6.4.17",
     "bcrypt": "^5.1.1",
-    "docx": "^9.5.1",
-    "file-saver": "^2.0.5",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
@@ -34,7 +32,6 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@types/file-saver": "^2.0.7",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
