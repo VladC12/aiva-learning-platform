@@ -13,9 +13,7 @@ interface BuilderQuestionItemProps {
 
 export default function BuilderQuestionItem({
   question,
-  index,
   displayNumber,
-  selectedQuestions,
   onViewQuestion,
   showType = false,
   onDeselectQuestion

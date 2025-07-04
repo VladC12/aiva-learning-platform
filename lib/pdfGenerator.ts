@@ -1,7 +1,6 @@
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
 import { saveAs } from 'file-saver';
 import { Question } from '@/models/Question';
-import katex from 'katex';
 
 /**
  * Converts KaTeX expressions to plain text for PDF
