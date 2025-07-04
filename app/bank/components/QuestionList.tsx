@@ -36,6 +36,26 @@ export default function QuestionList({
     );
   }
   
+  // Calculate current type counts when in selectable mode
+  const typeCounts = isSelectable ? {
+    'MCQ': selectedQuestions.filter(q => q.q_type === 'MCQ').length,
+    'A-R': selectedQuestions.filter(q => q.q_type === 'A-R').length,
+    'VSA': selectedQuestions.filter(q => q.q_type === 'VSA').length,
+    'SA': selectedQuestions.filter(q => q.q_type === 'SA').length,
+    'LA': selectedQuestions.filter(q => q.q_type === 'LA').length,
+    'Case-Study': selectedQuestions.filter(q => q.q_type === 'Case-Study').length,
+  } : {};
+  
+  // Define type limits
+  const typeLimits = {
+    'MCQ': 18,
+    'A-R': 2,
+    'VSA': 5,
+    'SA': 6,
+    'LA': 4,
+    'Case-Study': 3
+  };
+  
   return (
     <div className={styles.questionList}>
       <div className={styles.questionHeader}>
@@ -52,21 +72,30 @@ export default function QuestionList({
         {isReviewer && <div className={styles.questionNotes}>Notes</div>}
       </div>
 
-      {questions.map((question) => (
-        <QuestionItem
-          key={question._id as string}
-          question={question}
-          filterOptions={filterOptions}
-          isModerator={isModerator}
-          isReviewer={isReviewer}
-          isReadOnly={isReadOnly}
-          isSelectable={isSelectable}
-          isSelected={selectedQuestions.some(q => q._id === question._id)}
-          onQuestionUpdate={onQuestionUpdate}
-          onViewQuestion={onViewQuestion}
-          onSelectQuestion={onToggleSelectQuestion}
-        />
-      ))}
+      {questions.map((question) => {
+        // Check if this question type has reached its limit
+        const qType = question.q_type || '';
+        const isAtLimit = isSelectable && 
+          (typeCounts[qType as keyof typeof typeCounts] || 0) >= (typeLimits[qType as keyof typeof typeLimits] || 0) &&
+          !selectedQuestions.some(q => q._id === question._id);
+        
+        return (
+          <QuestionItem
+            key={question._id as string}
+            question={question}
+            filterOptions={filterOptions}
+            isModerator={isModerator}
+            isReviewer={isReviewer}
+            isReadOnly={isReadOnly}
+            isSelectable={isSelectable}
+            isSelected={selectedQuestions.some(q => q._id === question._id)}
+            isAtLimit={isAtLimit}
+            onQuestionUpdate={onQuestionUpdate}
+            onViewQuestion={onViewQuestion}
+            onSelectQuestion={onToggleSelectQuestion}
+          />
+        );
+      })}
     </div>
   );
 }

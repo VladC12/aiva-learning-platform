@@ -306,9 +306,42 @@ export default function Bank() {
       if (isAlreadySelected) {
         return prev.filter(q => q._id !== question._id);
       } else {
+        // Check if we've reached the limit for this question type
+        const qType = question.q_type || '';
+        
+        // Count questions by type
+        const typeCounts = {
+          'MCQ': prev.filter(q => q.q_type === 'MCQ').length,
+          'A-R': prev.filter(q => q.q_type === 'A-R').length,
+          'VSA': prev.filter(q => q.q_type === 'VSA').length,
+          'SA': prev.filter(q => q.q_type === 'SA').length,
+          'LA': prev.filter(q => q.q_type === 'LA').length,
+          'Case-Study': prev.filter(q => q.q_type === 'Case-Study').length,
+        };
+        
+        // Define limits for each type
+        const typeLimits = {
+          'MCQ': 18,
+          'A-R': 2,
+          'VSA': 5,
+          'SA': 6,
+          'LA': 4,
+          'Case-Study': 3
+        };
+        
+        // If we've reached the limit for this type, don't add it
+        if (typeCounts[qType as keyof typeof typeCounts] >= typeLimits[qType as keyof typeof typeLimits]) {
+          return prev; // Don't add the question
+        }
+        
         return [...prev, question];
       }
     });
+  };
+
+  // Function to remove a question from the selected questions
+  const handleRemoveQuestion = (questionId: string) => {
+    setSelectedQuestions(prev => prev.filter(q => q._id.toString() !== questionId));
   };
 
   const handleCreateQuestionSet = () => {
@@ -418,6 +451,8 @@ export default function Bank() {
               selectedQuestions={selectedQuestions}
               onClose={handleCloseQuestionSetBuilder}
               onSuccess={handleQuestionSetSuccess}
+              onViewQuestion={handleViewQuestion}
+              onRemoveQuestion={handleRemoveQuestion}
             />
           )}
         </div>
