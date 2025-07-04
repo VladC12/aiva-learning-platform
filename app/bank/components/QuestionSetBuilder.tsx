@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Question } from '../../../models/Question';
 import styles from './QuestionSetBuilder.module.css';
+import BuilderQuestionItem from './BuilderQuestionItem';
 
 interface QuestionSetBuilderProps {
   selectedQuestions: Question[];
   onClose: () => void;
   onSuccess: () => void;
+  onViewQuestion?: (question: Question) => void;
+  onRemoveQuestion?: (questionId: string) => void;
 }
 
 type BuilderMode = 'dps' | 'freeform';
@@ -13,7 +16,9 @@ type BuilderMode = 'dps' | 'freeform';
 export default function QuestionSetBuilder({ 
   selectedQuestions, 
   onClose,
-  onSuccess
+  onSuccess,
+  onViewQuestion,
+  onRemoveQuestion
 }: QuestionSetBuilderProps) {
   const [setLabel, setSetLabel] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -171,6 +176,18 @@ export default function QuestionSetBuilder({
     }
   };
 
+  // Function to deselect a question
+  const handleDeselectQuestion = (questionId: string) => {
+    if (builderMode === 'freeform') {
+      setFreeformQuestions(prev => prev.filter(q => q._id.toString() !== questionId));
+    }
+    
+    // Call the parent component's remove function if provided
+    if (onRemoveQuestion) {
+      onRemoveQuestion(questionId);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -222,11 +239,15 @@ export default function QuestionSetBuilder({
                   <h5>MCQ Questions (1-18): {organizedQuestions.A.MCQ.length}/18</h5>
                   <ul className={styles.questionList}>
                     {organizedQuestions.A.MCQ.map((q, index) => (
-                      <li key={q._id.toString()} className={styles.questionItem}>
-                        <span className={styles.questionNumber}>{index + 1}</span>
-                        <span className={styles.questionTopic}>{q.topic}</span>
-                        <span className={styles.questionDifficulty}>{q.difficulty_level}</span>
-                      </li>
+                      <BuilderQuestionItem
+                        key={q._id.toString()}
+                        question={q}
+                        index={index}
+                        displayNumber={index + 1}
+                        selectedQuestions={selectedQuestions}
+                        onViewQuestion={onViewQuestion}
+                        onDeselectQuestion={handleDeselectQuestion}
+                      />
                     ))}
                   </ul>
                 </div>
@@ -234,11 +255,15 @@ export default function QuestionSetBuilder({
                   <h5>A-R Questions (19-20): {organizedQuestions.A.AR.length}/2</h5>
                   <ul className={styles.questionList}>
                     {organizedQuestions.A.AR.map((q, index) => (
-                      <li key={q._id.toString()} className={styles.questionItem}>
-                        <span className={styles.questionNumber}>{19 + index}</span>
-                        <span className={styles.questionTopic}>{q.topic}</span>
-                        <span className={styles.questionDifficulty}>{q.difficulty_level}</span>
-                      </li>
+                      <BuilderQuestionItem
+                        key={q._id.toString()}
+                        question={q}
+                        index={index}
+                        displayNumber={19 + index}
+                        selectedQuestions={selectedQuestions}
+                        onViewQuestion={onViewQuestion}
+                        onDeselectQuestion={handleDeselectQuestion}
+                      />
                     ))}
                   </ul>
                 </div>
@@ -250,11 +275,15 @@ export default function QuestionSetBuilder({
                   <h5>VSA Questions (21-25): {organizedQuestions.B.VSA.length}/5</h5>
                   <ul className={styles.questionList}>
                     {organizedQuestions.B.VSA.map((q, index) => (
-                      <li key={q._id.toString()} className={styles.questionItem}>
-                        <span className={styles.questionNumber}>{21 + index}</span>
-                        <span className={styles.questionTopic}>{q.topic}</span>
-                        <span className={styles.questionDifficulty}>{q.difficulty_level}</span>
-                      </li>
+                      <BuilderQuestionItem
+                        key={q._id.toString()}
+                        question={q}
+                        index={index}
+                        displayNumber={21 + index}
+                        selectedQuestions={selectedQuestions}
+                        onViewQuestion={onViewQuestion}
+                        onDeselectQuestion={handleDeselectQuestion}
+                      />
                     ))}
                   </ul>
                 </div>
@@ -266,11 +295,15 @@ export default function QuestionSetBuilder({
                   <h5>SA Questions (26-31): {organizedQuestions.C.SA.length}/6</h5>
                   <ul className={styles.questionList}>
                     {organizedQuestions.C.SA.map((q, index) => (
-                      <li key={q._id.toString()} className={styles.questionItem}>
-                        <span className={styles.questionNumber}>{26 + index}</span>
-                        <span className={styles.questionTopic}>{q.topic}</span>
-                        <span className={styles.questionDifficulty}>{q.difficulty_level}</span>
-                      </li>
+                      <BuilderQuestionItem
+                        key={q._id.toString()}
+                        question={q}
+                        index={index}
+                        displayNumber={26 + index}
+                        selectedQuestions={selectedQuestions}
+                        onViewQuestion={onViewQuestion}
+                        onDeselectQuestion={handleDeselectQuestion}
+                      />
                     ))}
                   </ul>
                 </div>
@@ -282,11 +315,15 @@ export default function QuestionSetBuilder({
                   <h5>LA Questions (32-35): {organizedQuestions.D.LA.length}/4</h5>
                   <ul className={styles.questionList}>
                     {organizedQuestions.D.LA.map((q, index) => (
-                      <li key={q._id.toString()} className={styles.questionItem}>
-                        <span className={styles.questionNumber}>{32 + index}</span>
-                        <span className={styles.questionTopic}>{q.topic}</span>
-                        <span className={styles.questionDifficulty}>{q.difficulty_level}</span>
-                      </li>
+                      <BuilderQuestionItem
+                        key={q._id.toString()}
+                        question={q}
+                        index={index}
+                        displayNumber={32 + index}
+                        selectedQuestions={selectedQuestions}
+                        onViewQuestion={onViewQuestion}
+                        onDeselectQuestion={handleDeselectQuestion}
+                      />
                     ))}
                   </ul>
                 </div>
@@ -298,11 +335,15 @@ export default function QuestionSetBuilder({
                   <h5>Case-Study Questions (36-38): {organizedQuestions.E.CaseStudy.length}/3</h5>
                   <ul className={styles.questionList}>
                     {organizedQuestions.E.CaseStudy.map((q, index) => (
-                      <li key={q._id.toString()} className={styles.questionItem}>
-                        <span className={styles.questionNumber}>{36 + index}</span>
-                        <span className={styles.questionTopic}>{q.topic}</span>
-                        <span className={styles.questionDifficulty}>{q.difficulty_level}</span>
-                      </li>
+                      <BuilderQuestionItem
+                        key={q._id.toString()}
+                        question={q}
+                        index={index}
+                        displayNumber={36 + index}
+                        selectedQuestions={selectedQuestions}
+                        onViewQuestion={onViewQuestion}
+                        onDeselectQuestion={handleDeselectQuestion}
+                      />
                     ))}
                   </ul>
                 </div>
@@ -315,12 +356,16 @@ export default function QuestionSetBuilder({
                 <div className={styles.questionTypeGroup}>
                   <ul className={styles.questionList} style={{ maxHeight: '500px' }}>
                     {freeformQuestions.map((q, index) => (
-                      <li key={q._id.toString()} className={styles.questionItem}>
-                        <span className={styles.questionNumber}>{index + 1}</span>
-                        <span className={styles.questionTopic}>{q.topic}</span>
-                        <span className={styles.questionType}>{q.q_type || 'N/A'}</span>
-                        <span className={styles.questionDifficulty}>{q.difficulty_level}</span>
-                      </li>
+                      <BuilderQuestionItem
+                        key={q._id.toString()}
+                        question={q}
+                        index={index}
+                        displayNumber={index + 1}
+                        selectedQuestions={selectedQuestions}
+                        onViewQuestion={onViewQuestion}
+                        showType={true}
+                        onDeselectQuestion={handleDeselectQuestion}
+                      />
                     ))}
                   </ul>
                 </div>
