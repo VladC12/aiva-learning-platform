@@ -27,6 +27,32 @@ export default function QuestionList({
   onViewQuestion,
   onToggleSelectQuestion
 }: QuestionListProps) {
+  // Calculate if a question can be selected based on current selection
+  const canSelectQuestion = (question: Question): boolean => {
+    if (!isSelectable || !onToggleSelectQuestion) return false;
+    if (selectedQuestions.some(q => q._id === question._id)) return true;
+    
+    const qType = question.q_type || '';
+    
+    // Count how many questions of each type we already have
+    const counts = selectedQuestions.reduce((acc, q) => {
+      const type = q.q_type || '';
+      if (!acc[type]) acc[type] = 0;
+      acc[type]++;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    // Check limits for each question type
+    if (qType === 'MCQ' && (counts['MCQ'] || 0) >= 18) return false;
+    if (qType === 'A-R' && (counts['A-R'] || 0) >= 2) return false;
+    if (qType === 'VSA' && (counts['VSA'] || 0) >= 5) return false;
+    if (qType === 'SA' && (counts['SA'] || 0) >= 6) return false;
+    if (qType === 'LA' && (counts['LA'] || 0) >= 4) return false;
+    if (qType === 'Case-Study' && (counts['Case-Study'] || 0) >= 3) return false;
+    
+    return true;
+  };
+
   if (questions.length === 0) {
     return (
       <div className={styles.emptyState}>
@@ -60,7 +86,7 @@ export default function QuestionList({
           isModerator={isModerator}
           isReviewer={isReviewer}
           isReadOnly={isReadOnly}
-          isSelectable={isSelectable}
+          isSelectable={isSelectable && canSelectQuestion(question)}
           isSelected={selectedQuestions.some(q => q._id === question._id)}
           onQuestionUpdate={onQuestionUpdate}
           onViewQuestion={onViewQuestion}
