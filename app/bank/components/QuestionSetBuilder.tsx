@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Question } from '../../../models/Question';
 import styles from './QuestionSetBuilder.module.css';
+import QuestionSection from './QuestionSection';
+import BuilderQuestionItem from './BuilderQuestionItem';
 
 interface QuestionSetBuilderProps {
   selectedQuestions: Question[];
   onClose: () => void;
   onSuccess: () => void;
+  onViewQuestion?: (question: Question) => void;
 }
 
 type BuilderMode = 'dps' | 'freeform';
@@ -13,7 +16,8 @@ type BuilderMode = 'dps' | 'freeform';
 export default function QuestionSetBuilder({ 
   selectedQuestions, 
   onClose,
-  onSuccess
+  onSuccess,
+  onViewQuestion
 }: QuestionSetBuilderProps) {
   const [setLabel, setSetLabel] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -101,6 +105,22 @@ export default function QuestionSetBuilder({
       setOrganizedQuestions(sorted);
     }
   }, [selectedQuestions, builderMode]);
+
+  // Handle deselection of a question
+  const handleDeselectQuestion = (questionId: string) => {
+    const updatedQuestions = selectedQuestions.filter(q => q._id.toString() !== questionId);
+    
+    // Update parent component state via custom event
+    const event = new CustomEvent('update-selected-questions', { 
+      detail: updatedQuestions 
+    });
+    window.dispatchEvent(event);
+    
+    // If in freeform mode, also update local state
+    if (builderMode === 'freeform') {
+      setFreeformQuestions(updatedQuestions);
+    }
+  };
 
   const handleSaveQuestionSet = async () => {
     if (!setLabel.trim()) {
@@ -218,94 +238,76 @@ export default function QuestionSetBuilder({
               
               <div className={styles.section}>
                 <h4>Section A</h4>
-                <div className={styles.questionTypeGroup}>
-                  <h5>MCQ Questions (1-18): {organizedQuestions.A.MCQ.length}/18</h5>
-                  <ul className={styles.questionList}>
-                    {organizedQuestions.A.MCQ.map((q, index) => (
-                      <li key={q._id.toString()} className={styles.questionItem}>
-                        <span className={styles.questionNumber}>{index + 1}</span>
-                        <span className={styles.questionTopic}>{q.topic}</span>
-                        <span className={styles.questionDifficulty}>{q.difficulty_level}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className={styles.questionTypeGroup}>
-                  <h5>A-R Questions (19-20): {organizedQuestions.A.AR.length}/2</h5>
-                  <ul className={styles.questionList}>
-                    {organizedQuestions.A.AR.map((q, index) => (
-                      <li key={q._id.toString()} className={styles.questionItem}>
-                        <span className={styles.questionNumber}>{19 + index}</span>
-                        <span className={styles.questionTopic}>{q.topic}</span>
-                        <span className={styles.questionDifficulty}>{q.difficulty_level}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <QuestionSection
+                  title="MCQ Questions (1-18)"
+                  questions={organizedQuestions.A.MCQ}
+                  startIndex={1}
+                  maxCount={18}
+                  selectedQuestions={selectedQuestions}
+                  onViewQuestion={onViewQuestion}
+                  onDeselectQuestion={handleDeselectQuestion}
+                />
+                <QuestionSection
+                  title="A-R Questions (19-20)"
+                  questions={organizedQuestions.A.AR}
+                  startIndex={19}
+                  maxCount={2}
+                  selectedQuestions={selectedQuestions}
+                  onViewQuestion={onViewQuestion}
+                  onDeselectQuestion={handleDeselectQuestion}
+                />
               </div>
               
               <div className={styles.section}>
                 <h4>Section B</h4>
-                <div className={styles.questionTypeGroup}>
-                  <h5>VSA Questions (21-25): {organizedQuestions.B.VSA.length}/5</h5>
-                  <ul className={styles.questionList}>
-                    {organizedQuestions.B.VSA.map((q, index) => (
-                      <li key={q._id.toString()} className={styles.questionItem}>
-                        <span className={styles.questionNumber}>{21 + index}</span>
-                        <span className={styles.questionTopic}>{q.topic}</span>
-                        <span className={styles.questionDifficulty}>{q.difficulty_level}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <QuestionSection
+                  title="VSA Questions (21-25)"
+                  questions={organizedQuestions.B.VSA}
+                  startIndex={21}
+                  maxCount={5}
+                  selectedQuestions={selectedQuestions}
+                  onViewQuestion={onViewQuestion}
+                  onDeselectQuestion={handleDeselectQuestion}
+                />
               </div>
               
               <div className={styles.section}>
                 <h4>Section C</h4>
-                <div className={styles.questionTypeGroup}>
-                  <h5>SA Questions (26-31): {organizedQuestions.C.SA.length}/6</h5>
-                  <ul className={styles.questionList}>
-                    {organizedQuestions.C.SA.map((q, index) => (
-                      <li key={q._id.toString()} className={styles.questionItem}>
-                        <span className={styles.questionNumber}>{26 + index}</span>
-                        <span className={styles.questionTopic}>{q.topic}</span>
-                        <span className={styles.questionDifficulty}>{q.difficulty_level}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <QuestionSection
+                  title="SA Questions (26-31)"
+                  questions={organizedQuestions.C.SA}
+                  startIndex={26}
+                  maxCount={6}
+                  selectedQuestions={selectedQuestions}
+                  onViewQuestion={onViewQuestion}
+                  onDeselectQuestion={handleDeselectQuestion}
+                />
               </div>
               
               <div className={styles.section}>
                 <h4>Section D</h4>
-                <div className={styles.questionTypeGroup}>
-                  <h5>LA Questions (32-35): {organizedQuestions.D.LA.length}/4</h5>
-                  <ul className={styles.questionList}>
-                    {organizedQuestions.D.LA.map((q, index) => (
-                      <li key={q._id.toString()} className={styles.questionItem}>
-                        <span className={styles.questionNumber}>{32 + index}</span>
-                        <span className={styles.questionTopic}>{q.topic}</span>
-                        <span className={styles.questionDifficulty}>{q.difficulty_level}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <QuestionSection
+                  title="LA Questions (32-35)"
+                  questions={organizedQuestions.D.LA}
+                  startIndex={32}
+                  maxCount={4}
+                  selectedQuestions={selectedQuestions}
+                  onViewQuestion={onViewQuestion}
+                  onDeselectQuestion={handleDeselectQuestion}
+                />
               </div>
               
               <div className={styles.section}>
                 <h4>Section E</h4>
-                <div className={styles.questionTypeGroup}>
-                  <h5>Case-Study Questions (36-38): {organizedQuestions.E.CaseStudy.length}/3</h5>
-                  <ul className={styles.questionList}>
-                    {organizedQuestions.E.CaseStudy.map((q, index) => (
-                      <li key={q._id.toString()} className={styles.questionItem}>
-                        <span className={styles.questionNumber}>{36 + index}</span>
-                        <span className={styles.questionTopic}>{q.topic}</span>
-                        <span className={styles.questionDifficulty}>{q.difficulty_level}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <QuestionSection
+                  title="Case-Study Questions (36-38)"
+                  questions={organizedQuestions.E.CaseStudy}
+                  startIndex={36}
+                  maxCount={3}
+                  selectedQuestions={selectedQuestions}
+                  onViewQuestion={onViewQuestion}
+                  onDeselectQuestion={handleDeselectQuestion}
+                />
               </div>
             </>
           ) : (
@@ -315,12 +317,16 @@ export default function QuestionSetBuilder({
                 <div className={styles.questionTypeGroup}>
                   <ul className={styles.questionList} style={{ maxHeight: '500px' }}>
                     {freeformQuestions.map((q, index) => (
-                      <li key={q._id.toString()} className={styles.questionItem}>
-                        <span className={styles.questionNumber}>{index + 1}</span>
-                        <span className={styles.questionTopic}>{q.topic}</span>
-                        <span className={styles.questionType}>{q.q_type || 'N/A'}</span>
-                        <span className={styles.questionDifficulty}>{q.difficulty_level}</span>
-                      </li>
+                      <BuilderQuestionItem
+                        key={q._id.toString()}
+                        question={q}
+                        index={index}
+                        displayNumber={index + 1}
+                        selectedQuestions={selectedQuestions}
+                        onViewQuestion={onViewQuestion}
+                        showType={true}
+                        onDeselectQuestion={handleDeselectQuestion}
+                      />
                     ))}
                   </ul>
                 </div>
