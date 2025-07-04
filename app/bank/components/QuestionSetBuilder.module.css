@@ -155,6 +155,45 @@
   border-bottom: none;
 }
 
+.questionId {
+  margin-right: 0.5rem;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.questionActions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.viewButton {
+  padding: 2px 6px;
+  background-color: #e5e7eb;
+  border: 1px solid #d1d5db;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.viewButton:hover {
+  background-color: #d1d5db;
+}
+
+.deselectButton {
+  padding: 2px 6px;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  color: #b91c1c;
+}
+
+.deselectButton:hover {
+  background-color: #fecaca;
+}
+
 .questionNumber {
   width: 1.5rem;
   text-align: center;

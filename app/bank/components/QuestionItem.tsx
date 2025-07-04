@@ -12,6 +12,7 @@ interface QuestionItemProps {
   isReadOnly?: boolean;
   isSelectable?: boolean;
   isSelected?: boolean;
+  isAtLimit?: boolean;
   onQuestionUpdate: (updatedQuestion: Question) => void;
   onViewQuestion: (question: Question) => void;
   onSelectQuestion?: (question: Question) => void;
@@ -25,6 +26,7 @@ export default function QuestionItem({
   isReadOnly = false,
   isSelectable = false,
   isSelected = false,
+  isAtLimit = false,
   onQuestionUpdate,
   onViewQuestion,
   onSelectQuestion
@@ -127,11 +129,13 @@ export default function QuestionItem({
     <div className={`${styles.questionItem} ${isSelected ? styles.selected : ''}`}>
       {isSelectable && (
         <div className={styles.questionSelect}>
-          <input
-            type="checkbox"
+          <input 
+            type="checkbox" 
             checked={isSelected}
             onChange={() => onSelectQuestion && onSelectQuestion(question)}
-            aria-label={`Select question ${question.topic}`}
+            disabled={isAtLimit && !isSelected}
+            title={isAtLimit && !isSelected ? "Maximum number of questions of this type already selected" : ""}
+            className={isAtLimit && !isSelected ? styles.disabledCheckbox : ''}
           />
         </div>
       )}
