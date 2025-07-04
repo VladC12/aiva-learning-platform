@@ -1,76 +1,149 @@
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
+import { saveAs } from 'file-saver';
 import { Question } from '@/models/Question';
+import katex from 'katex';
 
-// Add the necessary types for jsPDF-autotable
-declare module 'jspdf' {
-  interface jsPDF {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    autoTable: (options: any) => jsPDF;
+/**
+ * Converts KaTeX expressions to plain text for PDF
+ * @param text Text possibly containing KaTeX expressions
+ * @returns Text with KaTeX expressions processed
+ */
+export function processKatexForPdf(text: string): string {
+  if (!text) return '';
+  
+  try {
+    // Replace inline math: $...$ with rendered text
+    let processedText = text.replace(/\$([^\$]+)\$/g, (match, formula) => {
+      try {
+        // We can't render actual KaTeX in PDF directly, but we can at least
+        // clean it up to make it more readable
+        return ` [Math: ${formula.trim()}] `;
+      } catch (err) {
+        console.error('Error processing inline KaTeX:', err);
+        return match; // Return original if there's an error
+      }
+    });
+
+    // Replace block math: $$...$$ with rendered text
+    processedText = processedText.replace(/\$\$([^\$]+)\$\$/g, (match, formula) => {
+      try {
+        return `\n\n[Math Expression: ${formula.trim()}]\n\n`;
+      } catch (err) {
+        console.error('Error processing block KaTeX:', err);
+        return match; // Return original if there's an error
+      }
+    });
+
+    return processedText;
+  } catch (err) {
+    console.error('Error in processKatexForPdf:', err);
+    return text; // Return original text if something goes wrong
   }
 }
 
-export const generateQuestionPDF = async (questions: Question[], title: string, includeSolutions: boolean = false) => {
-  // Create a new PDF document
-  const doc = new jsPDF();
-  
-  // Add title
-  doc.setFontSize(16);
-  doc.text(title, 14, 20);
-  
-  // Add metadata
-  doc.setFontSize(10);
-  const dateStr = new Date().toLocaleDateString();
-  doc.text(`Generated on: ${dateStr}`, 14, 30);
-  doc.text(`Total Questions: ${questions.length}`, 14, 35);
-  
-  // Add questions
-  questions.forEach((question, index) => {
-    // Add new page if needed
-    if (index > 0) {
-      doc.addPage();
-    }
-    
-    // Question number and metadata
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Question ${index + 1}`, 14, 45);
-    
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Topic: ${question.topic}`, 14, 52);
-    doc.text(`Difficulty: ${question.difficulty_level}`, 14, 58);
-    doc.text(`Type: ${question.q_type || 'Not specified'}`, 14, 64);
-    
-    // Question content
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Question:', 14, 74);
-    
-    doc.setFont('helvetica', 'normal');
-    
-    // Split long question text into multiple lines
-    const questionLines = doc.splitTextToSize(question.question, 180);
-    doc.text(questionLines, 14, 82);
-    
-    // Include solution if requested
-    if (includeSolutions && question.solution) {
-      // Calculate position for solution based on question text length
-      const questionHeight = questionLines.length * 7; // Approximate height based on font size
-      const solutionY = 82 + questionHeight + 15; // Add some spacing
-      
-      doc.setFont('helvetica', 'bold');
-      doc.text('Solution:', 14, solutionY);
-      
-      doc.setFont('helvetica', 'normal');
-      const solutionLines = doc.splitTextToSize(question.solution, 180);
-      doc.text(solutionLines, 14, solutionY + 8);
-    }
-  });
-  
-  return doc;
-};
+/**
+ * Generates a PDF document from a list of questions
+ */
+export async function generateQuestionPDF(
+  questions: Question[], 
+  title: string = 'Question Set', 
+  includeSolutions: boolean = false
+) {
+  // Create a new document
+  const doc = new Document({
+    sections: [
+      {
+        properties: {},
+        children: [
+          new Paragraph({
+            text: title,
+            heading: HeadingLevel.HEADING_1,
+            alignment: AlignmentType.CENTER,
+          }),
+          ...questions.flatMap((question, index) => {
+            // Process question text to handle KaTeX
+            const questionText = processKatexForPdf(question.question);
+            
+            const paragraphs = [
+              new Paragraph({
+                text: `Question ${index + 1}`,
+                heading: HeadingLevel.HEADING_2,
+                spacing: {
+                  before: 400,
+                  after: 200,
+                },
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `${questionText}`,
+                    size: 24,
+                  }),
+                ],
+                spacing: {
+                  after: 200,
+                },
+              }),
+            ];
 
-export const downloadPDF = (doc: jsPDF, filename: string) => {
-  doc.save(filename);
-};
+            // Add metadata as small text
+            paragraphs.push(
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `Class: ${question.class} | Subject: ${question.subject} | Topic: ${question.topic} | Difficulty: ${question.difficulty_level}`,
+                    size: 20,
+                    italics: true,
+                  }),
+                ],
+                spacing: {
+                  after: 400,
+                },
+              })
+            );
+
+            // Add solution if requested
+            if (includeSolutions) {
+              // Process solution text to handle KaTeX
+              const solutionText = processKatexForPdf(question.solution);
+              
+              paragraphs.push(
+                new Paragraph({
+                  text: "Solution:",
+                  heading: HeadingLevel.HEADING_3,
+                  spacing: {
+                    before: 200,
+                    after: 200,
+                  },
+                }),
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `${solutionText}`,
+                      size: 24,
+                    }),
+                  ],
+                  spacing: {
+                    after: 400,
+                  },
+                })
+              );
+            }
+
+            return paragraphs;
+          }),
+        ],
+      },
+    ],
+  });
+
+  return doc;
+}
+
+/**
+ * Downloads a PDF document
+ */
+export async function downloadPDF(doc: Document, filename: string) {
+  const blob = await Packer.toBlob(doc);
+  saveAs(blob, filename);
+}
