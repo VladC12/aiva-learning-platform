@@ -14,6 +14,12 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Documentation
+
+Additional documentation can be found in the [docs](./docs) directory:
+
+- [User Activity Tracking](./docs/user-activity-tracking.md) - Information about the user activity tracking system
+
 ## Enviroment Variables
 
 ### Required

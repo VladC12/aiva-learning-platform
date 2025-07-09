@@ -50,6 +50,29 @@ export default function LoginPage() {
         });
         console.log('Set token good');
         
+        // Track user login activity - make sure this happens AFTER token is set
+        // so the API can properly authenticate the user
+        try {
+          await fetch('/api/user-activity', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              activityType: 'login',
+              metadata: {
+                userAgent: navigator.userAgent,
+                role: data.user?.role || 'unknown',
+                timestamp: new Date().toISOString()
+              }
+            }),
+            credentials: 'include' // Important: include credentials to send cookies
+          });
+          console.log('User login activity tracked');
+        } catch (activityError) {
+          console.error('Failed to track login activity:', activityError);
+          // Don't fail the login process if activity tracking fails
+        }
         // Update analytics based on user role
         if (data.user && data.user.role) {
           await fetch('/api/analytics/login', {
@@ -60,7 +83,27 @@ export default function LoginPage() {
             body: JSON.stringify({ role: data.user.role }),
           });
           console.log('Analytics updated');
+          
+          // Track user login activity
+          await fetch('/api/user-activity', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              activityType: 'login',
+              metadata: {
+                userAgent: navigator.userAgent,
+                role: data.user.role,
+                timestamp: new Date().toISOString()
+              }
+            }),
+          });
+          console.log('User login activity tracked');
         }
+        
+        // Set session start time in sessionStorage
+        sessionStorage.setItem('sessionStartTime', Date.now().toString());
         
         // Simply use window.location for the most reliable navigation
         window.location.href = '/';
