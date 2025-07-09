@@ -1,5 +1,27 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import { ObjectId } from 'mongodb';
+
+// Define the activity interface
+interface UserActivity {
+  type: string;
+  timestamp: Date | string;
+  sessionDuration?: number;
+  page?: string;
+  metadata?: Record<string, unknown>;
+}
+
+// Define the user interface with activities
+interface UserWithActivities {
+  _id: ObjectId;
+  recentActivities?: UserActivity[];
+  activityCounts?: Record<string, number>;
+  lastActive?: Date;
+  lastLogin?: Date;
+  email?: string;
+  name?: string;
+  role?: string;
+}
 
 // Simple cleanup endpoint for development
 export async function GET() {
@@ -16,7 +38,7 @@ export async function GET() {
     // Find users with recent activities
     const users = await usersCollection.find({ 
       recentActivities: { $exists: true } 
-    }).toArray();
+    }).toArray() as UserWithActivities[];
     
     let modifiedCount = 0;
     
@@ -24,7 +46,7 @@ export async function GET() {
     for (const user of users) {
       if (Array.isArray(user.recentActivities)) {
         // Filter activities to keep only those less than a week old
-        const filteredActivities = user.recentActivities.filter((activity: any) => {
+        const filteredActivities = user.recentActivities.filter((activity: UserActivity) => {
           const activityDate = new Date(activity.timestamp);
           return activityDate >= oneWeekAgo;
         });
