@@ -38,8 +38,8 @@ export default function Dropdown({ label, value, options, onChange, placeholder 
             setIsOpen(false);
             selectRef.current?.blur();
           }}
-          onFocus={() => setIsOpen(true)}
-          onBlur={() => setIsOpen(false)}
+          // onFocus={() => setIsOpen(true)}
+          // onBlur={() => setIsOpen(false)}
           onClick={() => {
             if (isOpen) {
               setIsOpen(false);

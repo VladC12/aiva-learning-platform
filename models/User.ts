@@ -129,6 +129,62 @@ class UserModel {
     return user?.question_tracking || {};
   }
 
+  // Add trackActivity method to the UserModel class
+  async trackActivity(userId: string, activityType: string, metadata: any = {}) {
+    try {
+      const now = new Date();
+      
+      // Prepare the activity data
+      const activityData = {
+        type: activityType,
+        timestamp: now,
+        ...metadata
+      };
+      
+      // Calculate date for one week ago (for data retention)
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      
+      // Update operations
+      const updateOps: any = {
+        // Add new activity to the recent activities array (limited to 1 week)
+        $push: { 
+          'recentActivities': {
+            $each: [activityData],
+            $position: 0, // Add at the beginning of array (most recent first)
+            $sort: { timestamp: -1 } // Ensure sorted by timestamp descending
+          }
+        },
+        // Increment activity type counter
+        $inc: { [`activityCounts.${activityType}`]: 1 },
+        // Update last active timestamp
+        $set: { lastActive: now }
+      };
+      
+      // Remove activities older than one week
+      await this.collection.updateOne(
+        { _id: new ObjectId(userId) },
+        { $pull: { 'recentActivities': { timestamp: { $lt: oneWeekAgo } } } }
+      );
+      
+      // If login, update specific login metrics
+      if (activityType === 'login') {
+        updateOps.$set.lastLogin = now;
+      }
+      
+      // Apply all updates
+      const result = await this.collection.updateOne(
+        { _id: new ObjectId(userId) },
+        updateOps
+      );
+      
+      return result;
+    } catch (error) {
+      console.error('Error tracking activity:', error);
+      throw error;
+    }
+  }
+
   generateToken(user: User) {
     return jwt.sign(
       { userId: user._id, email: user.email_address },
