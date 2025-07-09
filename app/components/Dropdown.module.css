@@ -45,6 +45,7 @@
   pointer-events: none;
   font-size: 0.8rem;
   transition: transform 0.2s;
+  z-index: 99;
 }
 
 .arrow.up {
