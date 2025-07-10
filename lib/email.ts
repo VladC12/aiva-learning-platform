@@ -122,7 +122,15 @@ export async function sendEmail(options: {
 }
 
 export async function sendPasswordResetEmail(email: string, token: string) {
-  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`;
+  // Determine the base URL for the reset link
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
+    (process.env.NODE_ENV === 'development' 
+      ? 'http://localhost:3000' 
+      : 'https://yourproductionsite.com');
+  
+  const resetUrl = `${baseUrl}/auth/reset-password?token=${token}`;
+  
+  console.log(`Password reset link generated for ${email}: ${resetUrl}`);
 
   return sendEmail({
     to: email,
