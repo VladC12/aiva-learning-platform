@@ -8,6 +8,7 @@ const publicApiRoutes = [
   '/api/auth/login',
   '/api/auth/signup',
   '/api/auth/recover',
+  '/api/auth/reset-password',
   '/api/auth/set-token',
   '/api/demo-questions',
   '/api/demo-pdf-proxy',

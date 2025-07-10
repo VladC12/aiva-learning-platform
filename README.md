@@ -33,7 +33,7 @@ Additional documentation can be found in the [docs](./docs) directory:
 | `EMAIL_HOST` | SMTP server hostname | `smtp.gmail.com` |
 | `EMAIL_USER` | Sender user for logging in SMPT server | `no-reply@yourapp.com` |
 | `EMAIL_FROM` | Sender email address | `no-reply@yourapp.com` |
-| `EMAIL_PASSWORD` | SMTP password | `your-app-specific-password` |
+| `EMAIL_PASSWORD` | SMTP App password | `your-app-specific-password` |
 | `NEXT_PUBLIC_APP_URL` | Public URL of your application (in development, defaults to http://localhost:3000) | `https://example.com` |
 
 ### Optional
