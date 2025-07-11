@@ -36,7 +36,7 @@ export default function QuestionItem({
   const [isSavingNote, setIsSavingNote] = useState(false);
   const handleChangeDifficulty = async (newDifficulty: string) => {
     if (isReadOnly) return;
-    
+
     try {
       const field = isModerator ? 'modDifficulty_level' : 'difficulty_level';
       await updateQuestion(question._id, { [field]: newDifficulty });
@@ -48,7 +48,7 @@ export default function QuestionItem({
 
   const handleToggleInCourse = async (newValue: boolean) => {
     if (isReadOnly) return;
-    
+
     try {
       const field = isModerator ? 'modInCourse' : 'inCourse';
       await updateQuestion(question._id, { [field]: newValue });
@@ -60,7 +60,7 @@ export default function QuestionItem({
 
   const handleToggleHOTS = async (newValue: boolean) => {
     if (isReadOnly) return;
-    
+
     try {
       const field = isModerator ? 'modIsHOTS' : 'isHOTS';
       await updateQuestion(question._id, { [field]: newValue });
@@ -72,7 +72,7 @@ export default function QuestionItem({
 
   const handleToggleCorrect = async (newValue: boolean) => {
     if (isReadOnly) return;
-    
+
     try {
       const field = isModerator ? 'modIsCorrect' : 'isCorrect';
       await updateQuestion(question._id, { [field]: newValue });
@@ -84,7 +84,7 @@ export default function QuestionItem({
 
   const handleChangeQuestionType = async (newType: string) => {
     if (isReadOnly) return;
-    
+
     try {
       const field = isModerator ? 'modQ_type' : 'q_type';
       await updateQuestion(question._id, { [field]: newType });
@@ -93,17 +93,17 @@ export default function QuestionItem({
       console.error('Error updating question type:', error);
     }
   };
-  
+
   const handleSaveNote = async () => {
     if (!isReviewer) return;
-    
+
     try {
       setIsSavingNote(true);
       const trimmedNote = noteText.trim();
-      
+
       // If the note is empty, set it to null or undefined to remove it
       const updateValue = trimmedNote === '' ? null : trimmedNote;
-      
+
       await updateQuestion(question._id, { reviewer_note: updateValue });
       onQuestionUpdate({ ...question, reviewer_note: trimmedNote || undefined });
       setIsNoteModalOpen(false);
@@ -129,8 +129,8 @@ export default function QuestionItem({
     <div className={`${styles.questionItem} ${isSelected ? styles.selected : ''}`}>
       {isSelectable && (
         <div className={styles.questionSelect}>
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             checked={isSelected}
             onChange={() => onSelectQuestion && onSelectQuestion(question)}
             disabled={isAtLimit && !isSelected}
@@ -167,21 +167,22 @@ export default function QuestionItem({
         )}
       </div>
       <div className={styles.questionClass}>{question.class}</div>
-      <div className={styles.questionInCourse}>
-        <StatusToggle
-          value={isModerator
-            ? (question.modInCourse !== undefined ? question.modInCourse : question.inCourse)
-            : question.inCourse
-          }
-          onToggle={handleToggleInCourse}
-          trueLabel="Yes"
-          falseLabel="No"
-          unmarkedLabel="Unmarked"
-          trueBtnLabel="✓"
-          falseBtnLabel="✕"
-          readOnly={isReadOnly}
-        />
-      </div>
+      {!isReadOnly &&
+        <div className={styles.questionInCourse}>
+          <StatusToggle
+            value={isModerator
+              ? (question.modInCourse !== undefined ? question.modInCourse : question.inCourse)
+              : question.inCourse
+            }
+            onToggle={handleToggleInCourse}
+            trueLabel="Yes"
+            falseLabel="No"
+            unmarkedLabel="Unmarked"
+            trueBtnLabel="✓"
+            falseBtnLabel="✕"
+            readOnly={isReadOnly}
+          />
+        </div>}
       <div className={styles.questionHOTS}>
         <StatusToggle
           value={isModerator
@@ -197,21 +198,22 @@ export default function QuestionItem({
           readOnly={isReadOnly}
         />
       </div>
-      <div className={styles.questionCorrect}>
-        <StatusToggle
-          value={isModerator
-            ? (question.modIsCorrect !== undefined ? question.modIsCorrect : question.isCorrect)
-            : question.isCorrect
-          }
-          onToggle={handleToggleCorrect}
-          trueLabel="Yes"
-          falseLabel="No"
-          unmarkedLabel="Unmarked"
-          trueBtnLabel="✓"
-          falseBtnLabel="✕"
-          readOnly={isReadOnly}
-        />
-      </div>
+      {!isReadOnly &&
+        <div className={styles.questionCorrect}>
+          <StatusToggle
+            value={isModerator
+              ? (question.modIsCorrect !== undefined ? question.modIsCorrect : question.isCorrect)
+              : question.isCorrect
+            }
+            onToggle={handleToggleCorrect}
+            trueLabel="Yes"
+            falseLabel="No"
+            unmarkedLabel="Unmarked"
+            trueBtnLabel="✓"
+            falseBtnLabel="✕"
+            readOnly={isReadOnly}
+          />
+        </div>}
       <div className={styles.questionType}>
         {isReadOnly ? (
           <span>{currentQuestionType || 'Not specified'}</span>
@@ -228,7 +230,7 @@ export default function QuestionItem({
           </select>
         )}
       </div>
-      
+
       {isReviewer && (
         <div className={styles.questionNotes}>
           <button
@@ -239,7 +241,7 @@ export default function QuestionItem({
           </button>
         </div>
       )}
-      
+
       {isReviewer && isNoteModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.noteModal}>

@@ -158,9 +158,17 @@ export default function Bank() {
       try {
         setIsLoading(true);
         const isModerator = user?.type === 'moderator';
+        const isTeacher = user?.type === 'teacher';
+        
+        // For teachers, add fixed filters for inCourse and isCorrect
+        const teacherFilters = isTeacher ? {
+          ...filters,
+          inCourse: ['Yes'],
+          isCorrect: ['Yes']
+        } : filters;
 
         const questionsData = await fetchQuestions(
-          filters,
+          teacherFilters,
           { page: pagination.page, limit: pagination.limit },
           isModerator
         );
@@ -185,7 +193,16 @@ export default function Bank() {
 
       try {
         const isModerator = user.type === 'moderator';
-        const countData = await fetchQuestionCount(filters, isModerator);
+        const isTeacher = user.type === 'teacher';
+        
+        // For teachers, add fixed filters for inCourse and isCorrect
+        const teacherFilters = isTeacher ? {
+          ...filters,
+          inCourse: ['Yes'],
+          isCorrect: ['Yes']
+        } : filters;
+        
+        const countData = await fetchQuestionCount(teacherFilters, isModerator);
         
         setPagination(prev => ({
           ...prev,
@@ -393,6 +410,7 @@ export default function Bank() {
             filterOptions={filterOptions}
             filters={filters}
             onFilterChange={handleFilterChange}
+            isTeacher={user.type === 'teacher'}
           />
 
           {/* Questions content */}
