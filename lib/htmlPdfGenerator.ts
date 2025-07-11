@@ -96,15 +96,6 @@ function createHtmlDocument(
     questionContent.style.marginBottom = '15px';
     questionContainer.appendChild(questionContent);
     
-    // Question metadata
-    const metadata = document.createElement('div');
-    metadata.style.fontSize = '12px';
-    metadata.style.color = '#666';
-    metadata.style.fontStyle = 'italic';
-    metadata.style.marginBottom = '15px';
-    metadata.textContent = `Class: ${question.class} | Subject: ${question.subject} | Topic: ${question.topic} | Difficulty: ${question.difficulty_level}`;
-    questionContainer.appendChild(metadata);
-    
     // Add solution if requested
     if (includeSolutions) {
       const solutionHeader = document.createElement('h3');

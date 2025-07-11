@@ -8,11 +8,11 @@ import styles from '../page.module.css';
 import PdfGenerationControls from './PdfGenerationControls';
 
 // Regular Question display component
-function QuestionDisplay({ 
-    questions, 
-    questionSetLabel, 
-    canGeneratePdf = false 
-}: { 
+function QuestionDisplay({
+    questions,
+    questionSetLabel,
+    canGeneratePdf = false
+}: {
     questions: Question[];
     questionSetLabel?: string;
     canGeneratePdf?: boolean;
@@ -72,14 +72,13 @@ function QuestionDisplay({
 
     return (
         <div className={styles.container}>
-            {canGeneratePdf && <div className={styles.pdfControls}>
-                <PdfGenerationControls 
-                    questions={questions} 
-                    questionSetLabel={questionSetLabel}
-                />
-            </div>}
-            
             <div className={styles.sidebar}>
+                {canGeneratePdf && <div className={styles.pdfControls}>
+                    <PdfGenerationControls
+                        questions={questions}
+                        questionSetLabel={questionSetLabel}
+                    />
+                </div>}
                 <div className={styles.questionCount}>
                     Question: {`${currentQuestionIndex + 1} / ${questions.length}`}
                 </div>
@@ -88,6 +87,8 @@ function QuestionDisplay({
                     <div><strong>Class:</strong> {currentQuestion.class}</div>
                     <div><strong>Topic:</strong> {currentQuestion.topic}</div>
                     <div><strong>Subject:</strong> {currentQuestion.subject}</div>
+                    <div><strong>Type:</strong> {currentQuestion.q_type}</div>
+                    <div><strong>Number*:</strong>{currentQuestion.q_number}</div>
                     <div><strong>Difficulty:</strong> <span className={`${styles.difficulty} ${styles[getDifficultyClass(currentQuestion.difficulty_level)]}`}>
                         {currentQuestion.difficulty_level}
                     </span></div>

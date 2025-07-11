@@ -3,28 +3,31 @@ import { Question } from '../../../models/Question';
 import styles from './QuestionSetBuilder.module.css';
 import BuilderQuestionItem from './BuilderQuestionItem';
 
+type BuilderMode = 'dps' | 'freeform';
+
 interface QuestionSetBuilderProps {
   selectedQuestions: Question[];
   onClose: () => void;
   onSuccess: () => void;
   onViewQuestion?: (question: Question) => void;
   onRemoveQuestion?: (questionId: string) => void;
+  builderMode: BuilderMode;
+  onModeChange: (mode: BuilderMode) => void;
 }
-
-type BuilderMode = 'dps' | 'freeform';
 
 export default function QuestionSetBuilder({ 
   selectedQuestions, 
   onClose,
   onSuccess,
   onViewQuestion,
-  onRemoveQuestion
+  onRemoveQuestion,
+  builderMode,
+  onModeChange
 }: QuestionSetBuilderProps) {
   const [setLabel, setSetLabel] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [builderMode, setBuilderMode] = useState<BuilderMode>('dps');
   const [freeformQuestions, setFreeformQuestions] = useState<Question[]>([]);
   
   // Questions organized by section and type
@@ -213,14 +216,14 @@ export default function QuestionSetBuilder({
           <div className={styles.formatSelector}>
             <button 
               className={`${styles.formatButton} ${builderMode === 'dps' ? styles.active : ''}`}
-              onClick={() => setBuilderMode('dps')}
+              onClick={() => onModeChange('dps')}
               type="button"
             >
               DPS Format
             </button>
             <button 
               className={`${styles.formatButton} ${builderMode === 'freeform' ? styles.active : ''}`}
-              onClick={() => setBuilderMode('freeform')}
+              onClick={() => onModeChange('freeform')}
               type="button"
             >
               Freeform
@@ -351,7 +354,7 @@ export default function QuestionSetBuilder({
             </>
           ) : (
             <>
-              <h3>Selected Questions ({freeformQuestions.length})</h3>
+              <h3>Selected Questions ({freeformQuestions.length}/20)</h3>
               <div className={styles.section}>
                 <div className={styles.questionTypeGroup}>
                   <ul className={styles.questionList} style={{ maxHeight: '500px' }}>
