@@ -52,7 +52,7 @@ export async function GET(
       _id: teacherObjectId,
       type: 'teacher'
     });
-    
+
     if (!teacher) {
       return NextResponse.json(
         { message: 'Access denied: Only teachers can view student details' },

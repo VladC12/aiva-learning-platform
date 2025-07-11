@@ -44,6 +44,8 @@ export default function Bank() {
     totalPages: 0
   });
 
+  const [builderMode, setBuilderMode] = useState<'dps' | 'freeform'>('dps');
+
   // Redirect non-reviewer/non-moderator/non-teacher users
   useEffect(() => {
     if (!userLoading && user && user.type !== 'reviewer' && user.type !== 'moderator' && user.type !== 'teacher') {
@@ -156,9 +158,17 @@ export default function Bank() {
       try {
         setIsLoading(true);
         const isModerator = user?.type === 'moderator';
+        const isTeacher = user?.type === 'teacher';
+        
+        // For teachers, add fixed filters for inCourse and isCorrect
+        const teacherFilters = isTeacher ? {
+          ...filters,
+          inCourse: ['Yes'],
+          isCorrect: ['Yes']
+        } : filters;
 
         const questionsData = await fetchQuestions(
-          filters,
+          teacherFilters,
           { page: pagination.page, limit: pagination.limit },
           isModerator
         );
@@ -183,7 +193,16 @@ export default function Bank() {
 
       try {
         const isModerator = user.type === 'moderator';
-        const countData = await fetchQuestionCount(filters, isModerator);
+        const isTeacher = user.type === 'teacher';
+        
+        // For teachers, add fixed filters for inCourse and isCorrect
+        const teacherFilters = isTeacher ? {
+          ...filters,
+          inCourse: ['Yes'],
+          isCorrect: ['Yes']
+        } : filters;
+        
+        const countData = await fetchQuestionCount(teacherFilters, isModerator);
         
         setPagination(prev => ({
           ...prev,
@@ -303,10 +322,20 @@ export default function Bank() {
   const handleToggleSelectQuestion = (question: Question) => {
     setSelectedQuestions(prev => {
       const isAlreadySelected = prev.some(q => q._id === question._id);
+      
       if (isAlreadySelected) {
         return prev.filter(q => q._id !== question._id);
       } else {
-        // Check if we've reached the limit for this question type
+        // If we're in freeform mode, just check total limit
+        if (builderMode === 'freeform') {
+          // Check if we've reached the 20 question limit for freeform mode
+          if (prev.length >= 20) {
+            return prev; // Don't add more than 20 questions
+          }
+          return [...prev, question];
+        }
+        
+        // Otherwise, apply DPS mode constraints
         const qType = question.q_type || '';
         
         // Count questions by type
@@ -377,11 +406,11 @@ export default function Bank() {
         </div>
 
         <div className={showQuestionSetBuilder ? styles.contentWithBuilder : styles.contentGrid}>
-          {/* Filters sidebar */}
           <FilterSidebar
             filterOptions={filterOptions}
             filters={filters}
             onFilterChange={handleFilterChange}
+            isTeacher={user.type === 'teacher'}
           />
 
           {/* Questions content */}
@@ -434,6 +463,7 @@ export default function Bank() {
                   onToggleSelectQuestion={handleToggleSelectQuestion}
                   selectedQuestions={selectedQuestions}
                   isSelectable={user.type === 'teacher'}
+                  builderMode={builderMode}
                 />
 
                 {questions.length > 0 && (
@@ -453,6 +483,8 @@ export default function Bank() {
               onSuccess={handleQuestionSetSuccess}
               onViewQuestion={handleViewQuestion}
               onRemoveQuestion={handleRemoveQuestion}
+              builderMode={builderMode}
+              onModeChange={setBuilderMode}
             />
           )}
         </div>
