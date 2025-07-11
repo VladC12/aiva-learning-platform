@@ -29,6 +29,7 @@ interface User {
   profile_picture?: string;
   question_tracking?: QuestionTracking;
   room?: ObjectId;
+  pdf_limit_count?: number; // Track PDF generation limit for demo users
 }
 
 class UserModel {
@@ -181,6 +182,21 @@ class UserModel {
       return result;
     } catch (error) {
       console.error('Error tracking activity:', error);
+      throw error;
+    }
+  }
+
+  // Decrement PDF generation limit count
+  async decrementPdfLimit(userId: string) {
+    try {
+      const result = await this.collection.updateOne(
+        { _id: new ObjectId(userId), pdf_limit_count: { $gt: 0 } },
+        { $inc: { pdf_limit_count: -1 } }
+      );
+      
+      return result.modifiedCount > 0;
+    } catch (error) {
+      console.error('Error decrementing PDF limit:', error);
       throw error;
     }
   }

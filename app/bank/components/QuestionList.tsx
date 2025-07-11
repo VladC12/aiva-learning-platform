@@ -10,6 +10,7 @@ interface QuestionListProps {
   isReadOnly?: boolean;
   isSelectable?: boolean;
   selectedQuestions?: Question[];
+  builderMode?: 'dps' | 'freeform';
   onQuestionUpdate: (updatedQuestion: Question) => void;
   onViewQuestion: (question: Question) => void;
   onToggleSelectQuestion?: (question: Question) => void;
@@ -23,6 +24,7 @@ export default function QuestionList({
   isReadOnly = false,
   isSelectable = false,
   selectedQuestions = [],
+  builderMode = 'dps',
   onQuestionUpdate,
   onViewQuestion,
   onToggleSelectQuestion
@@ -65,19 +67,31 @@ export default function QuestionList({
         <div className={styles.questionContent}>Question</div>
         <div className={styles.questionDifficulty}>Difficulty</div>
         <div className={styles.questionClass}>Class</div>
-        <div className={styles.questionInCourse}>In Course</div>
+        {!isReadOnly && <div className={styles.questionInCourse}>In Course</div>}
         <div className={styles.questionHOTS}>HOTS</div>
-        <div className={styles.questionCorrect}>Correct</div>
+        {!isReadOnly && <div className={styles.questionCorrect}>Correct</div>}
         <div className={styles.questionType}>Type</div>
         {isReviewer && <div className={styles.questionNotes}>Notes</div>}
       </div>
 
       {questions.map((question) => {
-        // Check if this question type has reached its limit
-        const qType = question.q_type || '';
-        const isAtLimit = isSelectable && 
-          (typeCounts[qType as keyof typeof typeCounts] || 0) >= (typeLimits[qType as keyof typeof typeLimits] || 0) &&
-          !selectedQuestions.some(q => q._id === question._id);
+        // In freeform mode, only limit is the total of 20 questions
+        // In DPS mode, limits are per question type
+        let isAtLimit = false;
+        
+        if (isSelectable) {
+          if (builderMode === 'dps') {
+            // DPS mode: Check type-specific limits
+            const qType = question.q_type || '';
+            isAtLimit = (typeCounts[qType as keyof typeof typeCounts] || 0) >= 
+                        (typeLimits[qType as keyof typeof typeLimits] || 0) &&
+                        !selectedQuestions.some(q => q._id === question._id);
+          } else {
+            // Freeform mode: Only check total limit of 20
+            isAtLimit = selectedQuestions.length >= 20 && 
+                        !selectedQuestions.some(q => q._id === question._id);
+          }
+        }
         
         return (
           <QuestionItem

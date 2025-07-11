@@ -8,12 +8,14 @@ interface FilterSidebarProps {
   filterOptions: Record<string, FilterOption>;
   filters: FilterState;
   onFilterChange: (newFilters: Partial<FilterState>) => void;
+  isTeacher?: boolean;
 }
 
 export default function FilterSidebar({
   filterOptions,
   filters,
-  onFilterChange
+  onFilterChange,
+  isTeacher = false
 }: FilterSidebarProps) {
   const [questionNumberInput, setQuestionNumberInput] = useState(filters.q_number || '');
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -163,15 +165,17 @@ export default function FilterSidebar({
           />
         </div>
 
-        <div className={styles.filterItem}>
-          <label htmlFor="inCourse">In Course</label>
-          <MultiSelect
-            options={['Yes', 'No', 'Unmarked']}
-            value={filters.inCourse}
-            onChange={handleInCourseChange}
-            placeholder="Filter by course status"
-          />
-        </div>
+        {!isTeacher && (
+          <div className={styles.filterItem}>
+            <label htmlFor="inCourse">In Course</label>
+            <MultiSelect
+              options={['Yes', 'No', 'Unmarked']}
+              value={filters.inCourse}
+              onChange={handleInCourseChange}
+              placeholder="Filter by course status"
+            />
+          </div>
+        )}
 
         <div className={styles.filterItem}>
           <label htmlFor="isHOTS">Higher Order Thinking Skills</label>
@@ -183,15 +187,17 @@ export default function FilterSidebar({
           />
         </div>
 
-        <div className={styles.filterItem}>
-          <label htmlFor="isCorrect">Correct</label>
-          <MultiSelect
-            options={['Yes', 'No', 'Unmarked']}
-            value={filters.isCorrect}
-            onChange={handleCorrectChange}
-            placeholder="Filter by correctness"
-          />
-        </div>
+        {!isTeacher && (
+          <div className={styles.filterItem}>
+            <label htmlFor="isCorrect">Correct</label>
+            <MultiSelect
+              options={['Yes', 'No', 'Unmarked']}
+              value={filters.isCorrect}
+              onChange={handleCorrectChange}
+              placeholder="Filter by correctness"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
