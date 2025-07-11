@@ -27,6 +27,38 @@
   color: inherit;
 }
 
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 32px;
+}
+
+.demoTextContainer {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.demoText {
+  font-family: 'Dosis', Helvetica, sans-serif;
+  font-weight: 540;
+  color: #3C8BD6;
+  font-size: 2rem;
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: -0.01em;
+  vertical-align: middle;
+  transform: translateY(2px);
+  position: relative;
+  top: 0;
+}
+
 .navContent {
   display: flex;
   align-items: center;
