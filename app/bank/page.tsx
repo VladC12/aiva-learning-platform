@@ -44,6 +44,8 @@ export default function Bank() {
     totalPages: 0
   });
 
+  const [builderMode, setBuilderMode] = useState<'dps' | 'freeform'>('dps');
+
   // Redirect non-reviewer/non-moderator/non-teacher users
   useEffect(() => {
     if (!userLoading && user && user.type !== 'reviewer' && user.type !== 'moderator' && user.type !== 'teacher') {
@@ -303,10 +305,20 @@ export default function Bank() {
   const handleToggleSelectQuestion = (question: Question) => {
     setSelectedQuestions(prev => {
       const isAlreadySelected = prev.some(q => q._id === question._id);
+      
       if (isAlreadySelected) {
         return prev.filter(q => q._id !== question._id);
       } else {
-        // Check if we've reached the limit for this question type
+        // If we're in freeform mode, just check total limit
+        if (builderMode === 'freeform') {
+          // Check if we've reached the 20 question limit for freeform mode
+          if (prev.length >= 20) {
+            return prev; // Don't add more than 20 questions
+          }
+          return [...prev, question];
+        }
+        
+        // Otherwise, apply DPS mode constraints
         const qType = question.q_type || '';
         
         // Count questions by type
@@ -433,6 +445,7 @@ export default function Bank() {
                   onToggleSelectQuestion={handleToggleSelectQuestion}
                   selectedQuestions={selectedQuestions}
                   isSelectable={user.type === 'teacher'}
+                  builderMode={builderMode}
                 />
 
                 {questions.length > 0 && (
@@ -452,6 +465,8 @@ export default function Bank() {
               onSuccess={handleQuestionSetSuccess}
               onViewQuestion={handleViewQuestion}
               onRemoveQuestion={handleRemoveQuestion}
+              builderMode={builderMode}
+              onModeChange={setBuilderMode}
             />
           )}
         </div>
