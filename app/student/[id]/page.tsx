@@ -43,8 +43,17 @@ export default function StudentDetailPage() {
           return;
         }
         
-        // If student not found or other error
-        throw new Error(await response.text() || 'Failed to fetch student data');
+        // For other error statuses, try to extract the error message
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          // It's JSON, so parse it
+          const errorData = await response.json();
+          throw new Error(errorData.message || `Error: ${response.status}`);
+        } else {
+          // Not JSON, treat as text
+          const errorText = await response.text();
+          throw new Error(errorText || `Error: ${response.status}`);
+        }
       }
 
       const data = await response.json();
