@@ -23,6 +23,7 @@ export interface UserData {
   };
   type?: 'student' | 'teacher' | 'reviewer' | 'moderator';
   room?: string;
+  pdf_limit_count?: number;
 }
 
 interface UserContextType {
