@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import clientPromise from '@/lib/mongodb';
 import jwt from 'jsonwebtoken';
 import UserModel from '@/models/User';
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Get the token from cookies
     const cookieStore = await cookies();
