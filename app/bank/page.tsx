@@ -377,7 +377,6 @@ export default function Bank() {
         </div>
 
         <div className={showQuestionSetBuilder ? styles.contentWithBuilder : styles.contentGrid}>
-          {/* Filters sidebar */}
           <FilterSidebar
             filterOptions={filterOptions}
             filters={filters}
