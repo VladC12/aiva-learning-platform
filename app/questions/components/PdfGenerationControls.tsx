@@ -37,7 +37,7 @@ const PdfGenerationControls: React.FC<PdfGenerationControlsProps> = ({
       // Import HTML PDF generator
       const { generateQuestionPDF } = await import('@/lib/htmlPdfGenerator');
 
-      const title = `${questionSetLabel} ${includeSolutions ? '(with Solutions)' : '(Questions Only)'}`;
+      const title = `${questionSetLabel} ${includeSolutions ? '(with Solutions)' : ''}`;
       await generateQuestionPDF(questions, title, includeSolutions);
 
       // Decrement PDF limit if applicable
