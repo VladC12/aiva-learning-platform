@@ -1,3 +1,9 @@
+## Description
+
+This learning platform leverages AI-generated content to provide a streamlined and engaging educational experience. Students can practice exercises aligned with the curriculum, track their progress, and reinforce their understanding efficiently.
+
+For educators, the platform offers powerful tools to manage student groups, monitor individual and class-wide performance, and easily create exam papers through an intuitive question management interface.
+
 ## Getting Started
 
 First, run the development server:
