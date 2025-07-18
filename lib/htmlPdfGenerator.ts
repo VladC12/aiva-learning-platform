@@ -52,7 +52,8 @@ function renderKatex(text: string): string {
 function createHtmlDocument(
   questions: Question[],
   title: string,
-  includeSolutions: boolean
+  includeSolutions: boolean,
+  includeReviewSection: boolean = false
 ): HTMLElement {
   // Create a container div
   const container = document.createElement('div');
@@ -67,8 +68,9 @@ function createHtmlDocument(
   const titleElement = document.createElement('h1');
   titleElement.textContent = title;
   titleElement.style.textAlign = 'center';
-  titleElement.style.marginBottom = '20px';
+  titleElement.style.marginBottom = '30px'; // Increased margin to prevent cutoff
   titleElement.style.fontSize = '24px';
+  titleElement.style.paddingBottom = '10px'; // Added padding to ensure text isn't cut off
   container.appendChild(titleElement);
   
   // Add questions
@@ -113,6 +115,176 @@ function createHtmlDocument(
       solutionContent.innerHTML = renderKatex(question.solution);
       solutionContent.style.marginBottom = '20px';
       questionContainer.appendChild(solutionContent);
+      
+      // Add feedback section for reviewers if requested
+      if (includeReviewSection) {
+        // Create a container for the feedback section
+        const feedbackSection = document.createElement('div');
+        feedbackSection.className = 'feedback-section';
+        feedbackSection.style.marginTop = '30px';
+        feedbackSection.style.marginBottom = '30px';
+        feedbackSection.style.border = '1px solid #ddd';
+        feedbackSection.style.padding = '15px';
+        
+        // Add a header for the feedback section
+        const feedbackHeader = document.createElement('h3');
+        feedbackHeader.textContent = 'Reviewer Feedback';
+        feedbackHeader.style.fontSize = '16px';
+        feedbackHeader.style.marginTop = '0';
+        feedbackHeader.style.marginBottom = '15px';
+        feedbackSection.appendChild(feedbackHeader);
+        
+        // Create the question type by difficulty table
+        const table = document.createElement('table');
+        table.style.width = '100%';
+        table.style.borderCollapse = 'collapse';
+        table.style.marginBottom = '20px';
+        
+        // Create table header
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        
+        // Add empty cell for the top-left corner
+        const cornerCell = document.createElement('th');
+        cornerCell.style.border = '1px solid #ddd';
+        cornerCell.style.padding = '8px';
+        cornerCell.style.backgroundColor = '#f2f2f2';
+        headerRow.appendChild(cornerCell);
+        
+        // Add question type headers
+        const questionTypes = [
+          'MCQ', 'Assertion-Reasoning', 'VSA', 'SA', 'LA', 'Case Study', 'Integrated'
+        ];
+        
+        questionTypes.forEach(type => {
+          const th = document.createElement('th');
+          th.textContent = type;
+          th.style.border = '1px solid #ddd';
+          th.style.padding = '8px';
+          th.style.backgroundColor = '#f2f2f2';
+          headerRow.appendChild(th);
+        });
+        
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+        
+        // Create table body
+        const tbody = document.createElement('tbody');
+        const difficultyLevels = ['Easy', 'Medium', 'Difficult/HOTS'];
+        
+        difficultyLevels.forEach(level => {
+          const row = document.createElement('tr');
+          
+          // Add difficulty level in the first column
+          const levelCell = document.createElement('td');
+          levelCell.textContent = level;
+          levelCell.style.border = '1px solid #ddd';
+          levelCell.style.padding = '8px';
+          levelCell.style.fontWeight = 'bold';
+          levelCell.style.backgroundColor = '#f9f9f9';
+          row.appendChild(levelCell);
+          
+          // Add checkbox cells for each question type
+          questionTypes.forEach(() => {
+            const cell = document.createElement('td');
+            cell.style.border = '1px solid #ddd';
+            cell.style.padding = '8px';
+            cell.style.height = '30px';
+            row.appendChild(cell);
+          });
+          
+          tbody.appendChild(row);
+        });
+        
+        table.appendChild(tbody);
+        feedbackSection.appendChild(table);
+        
+        // Add approval/rejection section
+        const approvalSection = document.createElement('div');
+        approvalSection.style.marginBottom = '20px';
+        approvalSection.style.marginTop = '20px';
+        
+        const approvalLabel = document.createElement('span');
+        approvalLabel.textContent = 'Verdict: ';
+        approvalLabel.style.fontWeight = 'bold';
+        approvalSection.appendChild(approvalLabel);
+        
+        // Create a container for the checkboxes to align them properly
+        const checkboxContainer = document.createElement('div');
+        checkboxContainer.style.display = 'flex';
+        checkboxContainer.style.alignItems = 'center';
+        checkboxContainer.style.marginTop = '10px';
+        
+        // Approved checkbox
+        const approvedCheckbox = document.createElement('div');
+        approvedCheckbox.style.width = '20px';
+        approvedCheckbox.style.height = '20px';
+        approvedCheckbox.style.border = '2px solid #000';
+        approvedCheckbox.style.marginRight = '8px';
+        approvedCheckbox.style.display = 'inline-block';
+        
+        const approvedLabel = document.createElement('span');
+        approvedLabel.textContent = 'Approved';
+        approvedLabel.style.marginRight = '30px';
+        
+        // Add approved checkbox and label to container
+        checkboxContainer.appendChild(approvedCheckbox);
+        checkboxContainer.appendChild(approvedLabel);
+        
+        // Rejected checkbox
+        const rejectedCheckbox = document.createElement('div');
+        rejectedCheckbox.style.width = '20px';
+        rejectedCheckbox.style.height = '20px';
+        rejectedCheckbox.style.border = '2px solid #000';
+        rejectedCheckbox.style.marginRight = '8px';
+        rejectedCheckbox.style.display = 'inline-block';
+        
+        const rejectedLabel = document.createElement('span');
+        rejectedLabel.textContent = 'Rejected';
+        
+        // Add rejected checkbox and label to container
+        checkboxContainer.appendChild(rejectedCheckbox);
+        checkboxContainer.appendChild(rejectedLabel);
+        
+        // Add the checkbox container to the approval section
+        approvalSection.appendChild(checkboxContainer);
+        feedbackSection.appendChild(approvalSection);
+        
+        // Add comments section
+        const commentsSection = document.createElement('div');
+        commentsSection.style.marginBottom = '10px';
+        
+        const commentsLabel = document.createElement('div');
+        commentsLabel.textContent = 'Additional Comments:';
+        commentsLabel.style.fontWeight = 'bold';
+        commentsLabel.style.marginBottom = '5px';
+        commentsSection.appendChild(commentsLabel);
+        
+        // Add lines for comments
+        const commentsLines = document.createElement('div');
+        commentsLines.style.width = '100%';
+        commentsLines.style.height = '80px';
+        commentsLines.style.borderBottom = '1px solid #000';
+        commentsLines.style.borderTop = '1px solid #000';
+        commentsLines.style.position = 'relative';
+        
+        // Add multiple lines inside the comment box
+        for (let i = 1; i < 4; i++) {
+          const line = document.createElement('div');
+          line.style.position = 'absolute';
+          line.style.left = '0';
+          line.style.right = '0';
+          line.style.top = `${i * 20}px`;
+          line.style.borderBottom = '1px solid #eee';
+          commentsLines.appendChild(line);
+        }
+        
+        commentsSection.appendChild(commentsLines);
+        feedbackSection.appendChild(commentsSection);
+        
+        // Add the feedback section to the question container
+        questionContainer.appendChild(feedbackSection);
+      }
     }
     
     // Add the question container to the main container
@@ -137,14 +309,19 @@ function createHtmlDocument(
 export async function generateQuestionPDF(
   questions: Question[],
   title: string,
-  includeSolutions: boolean = false
+  includeSolutions: boolean = false,
+  includeReviewSection: boolean = false,
+  onProgress?: (progress: number) => void
 ): Promise<void> {
   // Create HTML document
-  const container = createHtmlDocument(questions, title, includeSolutions);
+  const container = createHtmlDocument(questions, title, includeSolutions, includeReviewSection);
   
   // Append to body temporarily (needed for html2canvas to work)
+  // Position off-screen but do not hide with visibility:hidden as it breaks html2canvas
   container.style.position = 'absolute';
   container.style.left = '-9999px';
+  container.style.top = '0';
+  container.style.opacity = '1'; // Ensure it's rendered but not visible
   document.body.appendChild(container);
   
   try {
@@ -170,20 +347,30 @@ export async function generateQuestionPDF(
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: null
+        backgroundColor: null,
+        allowTaint: true,
+        foreignObjectRendering: false
       });
       
       const imgWidth = pdfWidth - 40; // Add margin
       const imgHeight = (titleCanvas.height * imgWidth) / titleCanvas.width;
       
+      // Add extra bottom padding to prevent text cutoff
       const imgData = titleCanvas.toDataURL('image/png');
-      pdf.addImage(imgData, 'PNG', 20, yOffset, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'PNG', 20, yOffset, imgWidth, imgHeight + 5); // Added 5mm padding
       
-      yOffset += imgHeight + 10; // Update Y position for next element
+      yOffset += imgHeight + 15; // Increased padding after title
     }
     
     // Process each question container
     for (let i = 0; i < questionContainers.length; i++) {
+      // Update progress
+      if (onProgress) {
+        // Title is 10%, questions are 70%, watermark and finishing is 20%
+        const questionProgress = 10 + Math.round((i / questionContainers.length) * 70);
+        onProgress(questionProgress);
+      }
+      
       const questionContainer = questionContainers[i];
       
       // Generate canvas for this question container
@@ -191,7 +378,9 @@ export async function generateQuestionPDF(
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: null
+        backgroundColor: null,
+        allowTaint: true, // Allow cross-origin images
+        foreignObjectRendering: false // Better compatibility
       });
       
       // Calculate dimensions with proper aspect ratio
@@ -233,6 +422,10 @@ export async function generateQuestionPDF(
     }
     
     // Process complete, now add watermark under the content by going back to each page
+    if (onProgress) {
+      onProgress(80); // Update progress to 80% when starting watermark processing
+    }
+    
     const totalPages = pdf.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);
@@ -277,8 +470,16 @@ export async function generateQuestionPDF(
     }
     
     // Save the PDF
+    if (onProgress) {
+      onProgress(95); // Update progress to 95% when saving
+    }
+    
     const filename = title.replace(/\s+/g, '_') + '.pdf';
     pdf.save(filename);
+    
+    if (onProgress) {
+      onProgress(100); // Complete
+    }
   } finally {
     // Clean up - remove the temporary element
     if (container.parentNode) {
