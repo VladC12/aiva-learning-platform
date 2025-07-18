@@ -67,8 +67,9 @@ function createHtmlDocument(
   const titleElement = document.createElement('h1');
   titleElement.textContent = title;
   titleElement.style.textAlign = 'center';
-  titleElement.style.marginBottom = '20px';
+  titleElement.style.marginBottom = '30px'; // Increased margin to prevent cutoff
   titleElement.style.fontSize = '24px';
+  titleElement.style.paddingBottom = '10px'; // Added padding to ensure text isn't cut off
   container.appendChild(titleElement);
   
   // Add questions
@@ -176,10 +177,11 @@ export async function generateQuestionPDF(
       const imgWidth = pdfWidth - 40; // Add margin
       const imgHeight = (titleCanvas.height * imgWidth) / titleCanvas.width;
       
+      // Add extra bottom padding to prevent text cutoff
       const imgData = titleCanvas.toDataURL('image/png');
-      pdf.addImage(imgData, 'PNG', 20, yOffset, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'PNG', 20, yOffset, imgWidth, imgHeight + 5); // Added 5mm padding
       
-      yOffset += imgHeight + 10; // Update Y position for next element
+      yOffset += imgHeight + 15; // Increased padding after title
     }
     
     // Process each question container
