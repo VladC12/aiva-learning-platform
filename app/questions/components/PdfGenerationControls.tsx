@@ -15,6 +15,7 @@ const PdfGenerationControls: React.FC<PdfGenerationControlsProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const { user, refreshUser } = useUser();
   const [pdfLimit, setPdfLimit] = useState<number | null>(null);
+  const isReviewer = user && user.role !== 'student';
 
   useEffect(() => {
     if (user && user.pdf_limit_count !== undefined) {
@@ -24,7 +25,7 @@ const PdfGenerationControls: React.FC<PdfGenerationControlsProps> = ({
     }
   }, [user]);
 
-  const handleGeneratePdf = async (includeSolutions: boolean) => {
+  const handleGeneratePdf = async (includeSolutions: boolean, includeReview: boolean = false) => {
     try {
       // Check if user has PDF limit and if they've reached it
       if (pdfLimit !== null && pdfLimit <= 0) {
@@ -37,8 +38,18 @@ const PdfGenerationControls: React.FC<PdfGenerationControlsProps> = ({
       // Import HTML PDF generator
       const { generateQuestionPDF } = await import('@/lib/htmlPdfGenerator');
 
-      const title = `${questionSetLabel} ${includeSolutions ? '(with Solutions)' : ''}`;
-      await generateQuestionPDF(questions, title, includeSolutions);
+      let titleSuffix = '';
+      if (includeSolutions) titleSuffix += ' (with Solutions)';
+      if (includeReview) titleSuffix += ' (with Review Form)';
+      
+      const title = `${questionSetLabel}${titleSuffix}`;
+      
+      await generateQuestionPDF(
+        questions, 
+        title, 
+        includeSolutions, 
+        includeReview
+      );
 
       // Decrement PDF limit if applicable
       if (pdfLimit !== null) {
@@ -74,20 +85,32 @@ const PdfGenerationControls: React.FC<PdfGenerationControlsProps> = ({
     <div className={styles.container}>
       <h3 className={styles.title}>Download as PDF</h3>
       <div className={styles.buttonGroup}>
-        <button
-          className={`${styles.button} ${styles.questionsButton}`}
-          onClick={() => handleGeneratePdf(false)}
-          disabled={isGenerating}
-        >
-          {isGenerating ? 'Generating...' : 'Questions Only'}
-        </button>
-        <button
-          className={`${styles.button} ${styles.solutionsButton}`}
-          onClick={() => handleGeneratePdf(true)}
-          disabled={isGenerating}
-        >
-          {isGenerating ? 'Generating...' : 'With Solutions'}
-        </button>
+        <div className={styles.standardButtons}>
+          <button
+            className={`${styles.button} ${styles.questionsButton}`}
+            onClick={() => handleGeneratePdf(false)}
+            disabled={isGenerating}
+          >
+            {isGenerating ? 'Generating...' : 'Questions Only'}
+          </button>
+          <button
+            className={`${styles.button} ${styles.solutionsButton}`}
+            onClick={() => handleGeneratePdf(true)}
+            disabled={isGenerating}
+          >
+            {isGenerating ? 'Generating...' : 'With Solutions'}
+          </button>
+        </div>
+        
+        {isReviewer && (
+          <button
+            className={`${styles.button} ${styles.reviewButton}`}
+            onClick={() => handleGeneratePdf(true, true)}
+            disabled={isGenerating}
+          >
+            {isGenerating ? 'Generating...' : 'With Review Form'}
+          </button>
+        )}
       </div>
     </div>
   );
