@@ -241,8 +241,9 @@ export async function generateQuestionPDF(
       pdf.saveGraphicsState();
       
       // Set transparency for the watermark to ensure it's below the content
-      // Use a type cast to access GState since it might not be properly typed
-      const gState = new (pdf as any).GState({ opacity: 0.1 });
+      // Create GState object properly with the jsPDF API
+      const pdfWithGState = pdf as jsPDF & { GState: new (config: { opacity: number }) => unknown };
+      const gState = new pdfWithGState.GState({ opacity: 0.1 });
       pdf.setGState(gState);
       
       // Add aiva.vision watermark
