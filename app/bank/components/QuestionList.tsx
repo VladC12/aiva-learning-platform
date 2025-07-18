@@ -75,7 +75,6 @@ export default function QuestionList({
       </div>
 
       {questions.map((question) => {
-        // In freeform mode, only limit is the total of 20 questions
         // In DPS mode, limits are per question type
         let isAtLimit = false;
         
@@ -87,8 +86,8 @@ export default function QuestionList({
                         (typeLimits[qType as keyof typeof typeLimits] || 0) &&
                         !selectedQuestions.some(q => q._id === question._id);
           } else {
-            // Freeform mode: Only check total limit of 20
-            isAtLimit = selectedQuestions.length >= 20 && 
+            // Freeform mode: Only check total limit of 100
+            isAtLimit = selectedQuestions.length >= 100 && 
                         !selectedQuestions.some(q => q._id === question._id);
           }
         }
