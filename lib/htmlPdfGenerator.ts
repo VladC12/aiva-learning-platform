@@ -310,7 +310,8 @@ export async function generateQuestionPDF(
   questions: Question[],
   title: string,
   includeSolutions: boolean = false,
-  includeReviewSection: boolean = false
+  includeReviewSection: boolean = false,
+  onProgress?: (progress: number) => void
 ): Promise<void> {
   // Create HTML document
   const container = createHtmlDocument(questions, title, includeSolutions, includeReviewSection);
@@ -363,6 +364,13 @@ export async function generateQuestionPDF(
     
     // Process each question container
     for (let i = 0; i < questionContainers.length; i++) {
+      // Update progress
+      if (onProgress) {
+        // Title is 10%, questions are 70%, watermark and finishing is 20%
+        const questionProgress = 10 + Math.round((i / questionContainers.length) * 70);
+        onProgress(questionProgress);
+      }
+      
       const questionContainer = questionContainers[i];
       
       // Generate canvas for this question container
@@ -414,6 +422,10 @@ export async function generateQuestionPDF(
     }
     
     // Process complete, now add watermark under the content by going back to each page
+    if (onProgress) {
+      onProgress(80); // Update progress to 80% when starting watermark processing
+    }
+    
     const totalPages = pdf.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);
@@ -458,8 +470,16 @@ export async function generateQuestionPDF(
     }
     
     // Save the PDF
+    if (onProgress) {
+      onProgress(95); // Update progress to 95% when saving
+    }
+    
     const filename = title.replace(/\s+/g, '_') + '.pdf';
     pdf.save(filename);
+    
+    if (onProgress) {
+      onProgress(100); // Complete
+    }
   } finally {
     // Clean up - remove the temporary element
     if (container.parentNode) {
