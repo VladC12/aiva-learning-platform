@@ -232,24 +232,41 @@ export async function generateQuestionPDF(
       }
     }
     
-    // Add subtle watermark to each page
+    // Process complete, now add watermark under the content by going back to each page
     const totalPages = pdf.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);
       
+      // Save graphic state to restore later (ensures watermark appears under content)
+      pdf.saveGraphicsState();
+      
+      // Set transparency for the watermark to ensure it's below the content
+      // Use a type cast to access GState since it might not be properly typed
+      const gState = new (pdf as any).GState({ opacity: 0.1 });
+      pdf.setGState(gState);
+      
       // Add aiva.vision watermark
-      pdf.setFontSize(16);
-      pdf.setTextColor(230, 230, 230); // Very light gray for subtlety
+      pdf.setFontSize(30);  // Larger font since it's behind content
+      pdf.setTextColor(150, 150, 150); // Light gray for subtlety
       pdf.setFont('helvetica', 'italic');
       
       // Position watermark in center diagonally
       const watermarkText = 'aiva.vision';
       const textWidth = pdf.getTextWidth(watermarkText);
       
-      // Draw diagonal watermark across the center of the page
+      // Draw diagonal watermark across the center of the page (appears under content due to opacity)
       pdf.text(watermarkText, pdfWidth / 2 - textWidth / 2, pdfHeight / 2, {
         angle: -45
       });
+      
+      // Restore graphic state for normal opacity
+      pdf.restoreGraphicsState();
+      
+      // Add "In Development" banner at top of each page
+      pdf.setFontSize(10);
+      pdf.setTextColor(150, 150, 150);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('IN DEVELOPMENT', 20, 10);
       
       // Add footer with app name
       pdf.setFontSize(10);
