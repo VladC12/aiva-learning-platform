@@ -48,3 +48,4 @@ Additional documentation can be found in the [docs](./docs) directory:
 |----------|-------------|---------|
 | `EMAIL_PORT` | SMTP server port | `587` |
 | `EMAIL_SECURE` | Use SSL/TLS | `true` |
+| `FREE_FORM_LIMIT` | Question paper limit in free form mode | `100` |
