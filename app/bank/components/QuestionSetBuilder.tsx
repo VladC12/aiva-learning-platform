@@ -354,7 +354,7 @@ export default function QuestionSetBuilder({
             </>
           ) : (
             <>
-              <h3>Selected Questions ({freeformQuestions.length}/20)</h3>
+              <h3>Selected Questions ({freeformQuestions.length}/{Number(process.env.NEXT_PUBLIC_FREE_FORM_LIMIT || 100)})</h3>
               <div className={styles.section}>
                 <div className={styles.questionTypeGroup}>
                   <ul className={styles.questionList} style={{ maxHeight: '500px' }}>
