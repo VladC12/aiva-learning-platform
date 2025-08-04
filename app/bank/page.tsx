@@ -329,7 +329,7 @@ export default function Bank() {
         // If we're in freeform mode, just check total limit
         if (builderMode === 'freeform') {
           // Check if we've reached the question limit for freeform mode
-          if (prev.length >= Number(process.env.FREE_FORM_LIMIT) || 100) {
+          if (prev.length >= Number(process.env.NEXT_PUBLIC_FREE_FORM_LIMIT) || 100) {
             return prev; // Don't add more than the questions limit allows
           }
           return [...prev, question];
