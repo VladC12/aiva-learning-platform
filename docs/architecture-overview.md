@@ -190,6 +190,15 @@ sequenceDiagram
     end
 ```
 
+## File Storage Architecture
+- **PDF Storage**: Generated PDFs are stored in Azure Blob Storage for persistence and sharing
+- **PDF Proxy**: API routes handle secure PDF access and sharing via generated keys
+- **Caching**: PDF generation results are cached on the client-side to avoid regeneration
+
+### API Endpoints
+- `POST /generate-file-shared-key`: Generate temporary access tokens for stored PDFs
+- `POST /api/proxy-pdf`: Secure proxy for streaming PDFs.
+
 ## **Teacher - Student Interaction:**
 Teachers and students can be added to virtual classrooms which allows the teacher to keep track of their students.
 
@@ -254,15 +263,6 @@ graph TD
 - TeacherProfile component displays classroom and student analytics
 - StudentProfile component shows personalized progress tracking
 - Activity tracking system monitors student engagement
-
-## File Storage Architecture
-- **PDF Storage**: Generated PDFs are stored in Azure Blob Storage for persistence and sharing
-- **PDF Proxy**: API routes handle secure PDF access and sharing via generated keys
-- **Caching**: PDF generation results are cached on the client-side to avoid regeneration
-
-### API Endpoints
-- `POST /generate-file-shared-key`: Generate temporary access tokens for stored PDFs
-- `POST /api/proxy-pdf`: Secure proxy for streaming PDFs.
 
 ## Frontend
 The frontend follows Next.js App Router conventions with React components and CSS Modules for styling. The application implements a component-based architecture with shared UI components and domain-specific page components.
