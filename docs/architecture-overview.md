@@ -1,10 +1,12 @@
 # Learning Platform Architecture Overview
+**MVP1** created mainly to satisfy client requests.
 
 ## Technical Stack
 - **Frontend**: Next.js, React, TypeScript
 - **Styling**: CSS Modules
 - **Backend**: Next.js API Routes
 - **Database**: MongoDB (Should move to PostgreSQL)
+- **File Storage**: Azure Blob Storage (PDFs)
 - **Math Rendering**: react-markdown, remark-math, rehype-kayex
 - **PDF Generation**: jsPDF, html2canvas, KaTeX
 - **Authentication**: JWT-based authentication
@@ -15,8 +17,9 @@ The Learning Platform is a Next.js-based application designed to provide an inte
 ```mermaid
 graph TD
     User[User] --> Frontend[Next.js Frontend]
-    Frontend --> ApiRoutes[Next.js API Routes]
+    Frontend <--> ApiRoutes[Next.js API Routes]
     ApiRoutes --> MongoDB[(MongoDB)]
+    ApiRoutes --> Azure[AzureBlobStorage]
     
     subgraph "Frontend Components"
         Frontend --> PdfService[PDF Generation Service]
@@ -84,10 +87,6 @@ sequenceDiagram
 - `POST /api/auth/set-token`: Sets authentication token as httpOnly cookie
 - `POST /api/auth/signup`: Creates new user accounts with validation
 
-**Session Management:**
-- Session timeout after period of inactivity
-- Activity tracking and management
-
 **Access Control:**
 The platform implements a role-based access control system where each user type has specific permissions:
 
@@ -154,12 +153,34 @@ sequenceDiagram
     participant User
     participant QuestionsPage
     participant API
-    participant PDFGenerator
+    participant Storage as Azure Blob Storage
+    participant Cache as IndexedDB Cache
     
     User->>QuestionsPage: Navigate with parameters
     QuestionsPage->>API: Request questions
     API->>QuestionsPage: Return question data
-    QuestionsPage->>User: Display questions
+    
+    alt Standard Questions
+        QuestionsPage->>User: Display questions with Markdown+KateX
+    else PDF Question Set
+        QuestionsPage->>API: Request SAS token
+        API->>Storage: Generate temporary access
+        Storage-->>API: Return SAS URL
+        API-->>QuestionsPage: Return access URL
+        
+        QuestionsPage->>Cache: Check for cached PDF
+        alt Cache Hit
+            Cache-->>QuestionsPage: Return cached PDF
+        else Cache Miss
+            QuestionsPage->>API: Proxy PDF request
+            API->>Storage: Fetch PDF with SAS token
+            Storage-->>API: Return PDF document
+            API-->>QuestionsPage: Stream PDF content
+            QuestionsPage->>Cache: Store PDF for future use
+        end
+        
+        QuestionsPage->>User: Display PDF viewer
+    end
     
     alt Generate PDF
         User->>QuestionsPage: Request PDF
@@ -198,6 +219,7 @@ graph TD
         QStatus --> Success[Success]
         QStatus --> Failed[Failed]
         QStatus --> Unsure[Unsure]
+        QStatus --> Attempts[Attempts]
         
         TrackingSystem --> Analytics[Analytics]
     end
@@ -218,7 +240,7 @@ graph TD
 - Support for both standard questions and PDF question sets in tracking
 
 **Teacher Overview:**
-- Can bview the aggregated class data.
+- Can view the aggregated class data.
 - Teachers have access to student data to keep track of individual progress.
 
 **Data Flow:**
@@ -233,18 +255,52 @@ graph TD
 - StudentProfile component shows personalized progress tracking
 - Activity tracking system monitors student engagement
 
+## File Storage Architecture
+- **PDF Storage**: Generated PDFs are stored in Azure Blob Storage for persistence and sharing
+- **PDF Proxy**: API routes handle secure PDF access and sharing via generated keys
+- **Caching**: PDF generation results are cached on the client-side to avoid regeneration
+
+### API Endpoints
+- `POST /generate-file-shared-key`: Generate temporary access tokens for stored PDFs
+- `POST /api/proxy-pdf`: Secure proxy for streaming PDFs.
+
+## Frontend
+The frontend follows Next.js App Router conventions with React components and CSS Modules for styling. The application implements a component-based architecture with shared UI components and domain-specific page components.
+
+### Component Organization
+- **Global Components** (`/components`): UI components and complex domain components
+- **Page-Specific Components** (`/bank/components`, `/questions/components`): Components scoped to specific routes
+- **Pages** (`/auth`, `/bank`, `/questions`, `/student`): Route-based pages with co-located styling
+
+### Key Frontend Components
+- **Question Display System**: Handles rendering of mathematical content with LaTeX support
+- **PDF Generation Interface**: Client-side PDF creation and preview functionality  
+- **User Profile Management**: Teacher and student dashboard components
+- **Question Bank Interface**: Filtering, searching, and question set building functionality
+- **Authentication UI**: Authentication flow with form validation
+
+### State Management
+- **UserContext**: Global authentication state management
+- **Component State**: Local state management with React hooks
+- **API Integration**: Direct API calls from components with loading states
+
 ## Current Pain Points
 - **PDF Generation Performance**: The PDF generation process is resource-intensive and can be slow for large question sets. Not to mention it is not yet reliable in all edge cases.
 - **Component Structure**: Several large components have grown beyond their initial scope.
-- **State Management**: Prop-drilling and context in some areas makes state management complex.
+- **Component Responsibility Overload**: Some components handle form logic, business rules, API calls, and complex state management in rather large files.
+- **Business Logic**: Business rule validation mixed with UI component code. Some are hard-coded directly in component logic rather than extracted to configuration.
+- **State Management**: Prop-drilling and context in some areas makes state management complex. Manual synchronization between different state representations.
 - **Role Management**: The current roles were created by the request of the client. Ideally we should move to a more flexible approach.
 - **API Route Organization**: As the application has grown, API routes have become less organized and harder to maintain.
 - **Error Handling**: Inconsistent error handling patterns across different API endpoints..
 - **TypeScript Coverage**: Some components lack proper TypeScript typing.
-- **Design**: There was no overarching design in mind, features were implemented as needed and sometimes refactored only when it was "in the way".
+- **Design**: Lack of consistent design system with duplicated styles and components.
+- **Naming Convention**:  Lack of consistent naming conventions, resulting in some components and routes with unclear or non-descriptive names.
 - **Test Coverage**: Limited automated testing.
-- **Unused Code**: Code that was used in different iteration but not deleted.
+- **Unused Code**: Legacy code fragments remaining from previous iterations.
+- **Architectural Inconsistency**: Quick patches and hotfixes have led to inconsistent implementation patterns and duplicated functionality across components.
 - **Documentation**: Incomplete API documentation and architectural references.
+- **Mobile Responsiveness**: Primarly designed for desktop view.
 
 ## Unimplemented Features
 - **Signup**: Currently the users would not be able to set their own roles.
@@ -256,3 +312,12 @@ graph TD
 - **Question Set Assignment/Explorer**: Right now we simply show on the main page all the sets to all the users.
 - **Leaderboards**: Gamification of student experience
 - **Reporting**: Allowing the users (not just reviewers/moderators) to mark the questions as incorrect or with rendering errors.
+- **Rigorous Security**: Improved protection against common vulnerabilities (DDOS, SSRF), proper file validation, size limits, rate limiting, and stricter input validation across all endpoints.
+
+## Refactoring
+- Extracting business logic into services
+- Developing a consistent design system
+- Standardizing API route organization and error handling
+- Addressing security vulnerabilities
+- Implementing proper component composition patterns
+- Enhancing test coverage
