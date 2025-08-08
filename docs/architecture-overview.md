@@ -1,5 +1,5 @@
 # Learning Platform Architecture Overview
-**MVP1** created mainly to satisfy client requests.
+This implementation was primarily built by me over a 4-month part-time period. The platform was developed to meet MVP goals and evolved rapidly in response to dynamic client requirements. The current system functions as a working prototype, and several areas for refactoring, architectural consistency, and scalability have been identified.
 
 ## Technical Stack
 - **Frontend**: Next.js, React, TypeScript
@@ -123,7 +123,7 @@ graph TD
         TeacherMgmt --> Read[View and search questions]
         
         ReviewerMgmt --> Read[View and search questions]
-        ReviewerMgmt --> Review[Valdiate Questions]
+        ReviewerMgmt --> Review[Validate Questions]
 
         ModMgmt --> Read[View and search questions]
         ModMgmt --> Review2[Second Tier Question Valdiation]
@@ -315,9 +315,12 @@ The frontend follows Next.js App Router conventions with React components and CS
 - **Rigorous Security**: Improved protection against common vulnerabilities (DDOS, SSRF), proper file validation, size limits, rate limiting, and stricter input validation across all endpoints.
 
 ## Refactoring
-- Extracting business logic into services
-- Developing a consistent design system
-- Standardizing API route organization and error handling
-- Addressing security vulnerabilities
-- Implementing proper component composition patterns
-- Enhancing test coverage
+- Extracting business logic into services.
+- Developing a consistent design system.
+- Standardizing API route organization and error handling.
+- Addressing security vulnerabilities.
+- Implementing proper component composition patterns.
+- Enhancing test coverage.
+- Move to a relational database. There are many data relationships — such as teacher-student-room mappings and question-set structures that are better suited for a relational schema.
+- Consider a global state manager like Redux.
+- Consider server-side PDF creation.
