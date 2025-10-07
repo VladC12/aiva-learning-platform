@@ -19,7 +19,7 @@ export default function FilterSidebar({
 }: FilterSidebarProps) {
   const [questionNumberInput, setQuestionNumberInput] = useState(filters.q_number || '');
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Update local state when filters prop changes (to handle external filter resets)
   useEffect(() => {
     setQuestionNumberInput(filters.q_number || '');
@@ -57,21 +57,25 @@ export default function FilterSidebar({
     onFilterChange({ isCorrect: selected });
   };
 
+  const handleDPS_approvedChange = (selected: string[]) => {
+    onFilterChange({ DPS_approved: selected });
+  };
+
   const handleQuestionTypeChange = (selected: string[]) => {
     onFilterChange({ q_type: selected });
   };
-  
+
   const handleQuestionNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Only update if the value is empty or a valid number
     const value = e.target.value;
     if (value === '' || /^\d+$/.test(value)) {
       setQuestionNumberInput(value);
-      
+
       // Clear any existing timeout
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
       }
-      
+
       // Set a new timeout
       debounceTimerRef.current = setTimeout(() => {
         onFilterChange({ q_number: value });
@@ -139,27 +143,27 @@ export default function FilterSidebar({
           <label htmlFor="topics">{filterOptions.topic?.label || "Topics"}</label>
           <MultiSelect
             options={filterOptions.topic?.content || []}
-            value={filters.topic}
+            value={filters.topic || []}
             onChange={handleTopicsChange}
             placeholder="Select topics"
           />
         </div>
-        
+
         <div className={styles.filterItem}>
           <label htmlFor="q_type">{filterOptions.q_type?.label || "Question Type"}</label>
           <MultiSelect
             options={filterOptions.q_type?.content || []}
-            value={filters.q_type}
+            value={filters.q_type || []}
             onChange={handleQuestionTypeChange}
             placeholder="Select question types"
           />
         </div>
-        
+
         <div className={styles.filterItem}>
           <label htmlFor="difficulties">{filterOptions.difficulty_level?.label || "Difficulty"}</label>
           <MultiSelect
             options={filterOptions.difficulty_level?.content || []}
-            value={filters.difficulty_level}
+            value={filters.difficulty_level || []}
             onChange={handleDifficultiesChange}
             placeholder="Select difficulty levels"
           />
@@ -170,7 +174,7 @@ export default function FilterSidebar({
             <label htmlFor="inCourse">In Course</label>
             <MultiSelect
               options={['Yes', 'No', 'Unmarked']}
-              value={filters.inCourse}
+              value={filters.inCourse || []}
               onChange={handleInCourseChange}
               placeholder="Filter by course status"
             />
@@ -181,7 +185,7 @@ export default function FilterSidebar({
           <label htmlFor="isHOTS">Higher Order Thinking Skills</label>
           <MultiSelect
             options={['Yes', 'No', 'Unmarked']}
-            value={filters.isHOTS}
+            value={filters.isHOTS || []}
             onChange={handleHOTSChange}
             placeholder="Filter by HOTS status"
           />
@@ -192,9 +196,21 @@ export default function FilterSidebar({
             <label htmlFor="isCorrect">Correct</label>
             <MultiSelect
               options={['Yes', 'No', 'Unmarked']}
-              value={filters.isCorrect}
+              value={filters.isCorrect || []}
               onChange={handleCorrectChange}
               placeholder="Filter by correctness"
+            />
+          </div>
+        )}
+
+        {!isTeacher && (
+          <div className={styles.filterItem}>
+            <label htmlFor="isCorrect">DPS Approved</label>
+            <MultiSelect
+              options={['Yes', 'No', 'Unmarked']}
+              value={filters.DPS_approved || []}
+              onChange={handleDPS_approvedChange}
+              placeholder="Filter by DPS approval status"
             />
           </div>
         )}
