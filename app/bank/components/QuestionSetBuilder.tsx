@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Question } from '../../../models/Question';
 import styles from './QuestionSetBuilder.module.css';
 import BuilderQuestionItem from './BuilderQuestionItem';
+import { useUser } from 'context/UserContext';
 
 type BuilderMode = 'dps' | 'freeform';
 
@@ -29,6 +30,8 @@ export default function QuestionSetBuilder({
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [freeformQuestions, setFreeformQuestions] = useState<Question[]>([]);
+  const [appointToRoom, setAppointToRoom] = useState(false);
+  const { user } = useUser();
   
   // Questions organized by section and type
   const [organizedQuestions, setOrganizedQuestions] = useState<{
@@ -151,7 +154,7 @@ export default function QuestionSetBuilder({
         questionIds = freeformQuestions.map(q => q._id.toString());
       }
       
-      const response = await fetch('/api/question-sets', {
+      const response = await fetch('/api/question-sets/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -159,7 +162,9 @@ export default function QuestionSetBuilder({
         body: JSON.stringify({
           label: setLabel,
           questions: questionIds,
-          format: builderMode
+          format: builderMode,
+          appointToRoom: appointToRoom && user?.room ? true : false,
+          roomId: user?.room
         }),
       });
       
@@ -230,6 +235,20 @@ export default function QuestionSetBuilder({
             </button>
           </div>
         </div>
+        
+        {user?.type === 'teacher' && user?.room && (
+          <div className={styles.formGroup}>
+            <label className={styles.checkboxContainer}>
+              <input
+                type="checkbox"
+                checked={appointToRoom}
+                onChange={(e) => setAppointToRoom(e.target.checked)}
+                className={styles.checkbox}
+              />
+              <span>Appoint this question set to my room</span>
+            </label>
+          </div>
+        )}
         
         <div className={styles.sectionsContainer}>
           {builderMode === 'dps' ? (
