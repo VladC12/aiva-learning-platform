@@ -13,17 +13,19 @@
 .listContainer {
     display: flex;
     overflow-x: auto;
-    padding-bottom: 0.5rem;
+    padding: 10px 5px 15px 5px; /* Add padding to accommodate the delete button */
     width: 100%;
     /* justify-content: space-evenly; */
 }
 
 .questionSet {
+    position: relative;
     border: 1px solid #e5e7eb85;
     display: flex;
     align-items: center;
     padding: 1rem 2rem;
     margin-right: 0.75rem;
+    margin-top: 10px; /* Add margin-top to make room for delete button */
     background-color: white;
     border-radius: 4px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -82,4 +84,48 @@
     background-color: #8a2be2;
     padding: 0.1rem 0.2rem;
     /* Different color for PDF sets */
+}
+
+.deleteButton {
+    z-index: 10;
+    position: absolute;
+    top: -10px; /* Move it a bit higher */
+    right: -10px; /* Move it a bit more to the right */
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #dc2626;
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Add shadow for better visibility */
+}
+
+.deleteButton:hover {
+    opacity: 1;
+    transform: scale(1.1); /* Slight scale effect on hover */
+}
+
+/* Add loading and error states styling if not already defined */
+.loading, .error {
+    padding: 1rem;
+    text-align: center;
+    width: 100%;
+}
+
+.error {
+    color: #dc2626;
+}
+
+.emptyMessage {
+    padding: 1rem;
+    text-align: center;
+    color: #6b7280;
+    width: 100%;
 }

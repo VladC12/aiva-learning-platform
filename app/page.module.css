@@ -63,3 +63,17 @@
   font-size: 0.8rem;
   margin-top: 0.25rem;
 }
+
+.questionListsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+  .questionListsContainer {
+    gap: 1.5rem;
+  }
+}

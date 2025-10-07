@@ -2,6 +2,7 @@ import styles from './TeacherProfile.module.css'
 import Link from 'next/link'
 import { UserData } from "context/UserContext"
 import { useEffect, useState } from "react"
+import QuestionList from './QuestionList'
 
 interface Props {
   user: UserData
@@ -155,6 +156,17 @@ const TeacherProfile: React.FC<Props> = ({user}) => {
           )}
         </div>
       </div>
+
+      {/* Add Question Sets section */}
+      {user?.room && (
+        <div className={styles.questionSetsSection}>
+          <QuestionList 
+            roomId={user.room} 
+            filterByRoom={true} 
+            title="Room Question Sets"
+          />
+        </div>
+      )}
 
       <div className={styles.studentsSection}>
         <h2>Students Performance</h2>

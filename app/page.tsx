@@ -315,7 +315,24 @@ export default function Home() {
           Generate Questions
         </button>
       </form>
-      <QuestionList />
+      
+      {/* Display two question lists: global and room-specific */}
+      <div className={styles.questionListsContainer}>
+        {/* Global question sets (not filtered by room) */}
+        <QuestionList 
+          title="Global Question Sets" 
+          filterByRoom={false} 
+        />
+        
+        {/* Room-specific question sets (only if user has a room) */}
+        {user?.room && (
+          <QuestionList 
+            roomId={user.room} 
+            filterByRoom={true} 
+            title={user.type === 'teacher' ? "My Room Question Sets" : "Class Question Sets"}
+          />
+        )}
+      </div>
     </main>
   );
 }
