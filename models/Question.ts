@@ -11,6 +11,7 @@ export interface QuestionQuery {
   inCourse?: boolean | { $ne: undefined };
   isHOTS?: boolean | { $ne: undefined };
   isCorrect?: boolean | { $ne: undefined };
+  DPS_approved?: boolean | { $ne: undefined };
   $or?: Array<Record<string, any>>;
   $and?: Array<Record<string, any>>;
 }
@@ -57,6 +58,7 @@ export interface Question {
   inCourse?: boolean;
   isHOTS?: boolean;
   isCorrect?: boolean;
+  DPS_approved?: boolean;
   q_type?: string;
   reviewer_note?: string;
   // Moderator fields
@@ -86,6 +88,7 @@ export interface FilterState {
   isCorrect: string[];
   q_type: string[];
   q_number: string;
+  DPS_approved: string[];
 }
 
 export interface PaginationState {

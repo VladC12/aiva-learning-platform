@@ -33,10 +33,11 @@ export default function Bank() {
     inCourse: [],
     isHOTS: [],
     isCorrect: [],
+    DPS_approved: [],
     q_type: [],
     q_number: ''
   });
-
+  
   const [pagination, setPagination] = useState<PaginationState>({
     page: 1,
     limit: 10,
@@ -160,11 +161,12 @@ export default function Bank() {
         const isModerator = user?.type === 'moderator';
         const isTeacher = user?.type === 'teacher';
         
-        // For teachers, add fixed filters for inCourse and isCorrect
+        // For teachers, add fixed filters for inCourse, isCorrect and DPS_approved
         const teacherFilters = isTeacher ? {
           ...filters,
           inCourse: ['Yes'],
-          isCorrect: ['Yes']
+          isCorrect: ['Yes'],
+          DPS_approved: ['Yes']
         } : filters;
 
         const questionsData = await fetchQuestions(
@@ -185,7 +187,7 @@ export default function Bank() {
       getQuestions();
     }
   }, [filters, pagination.page, pagination.limit, user, userLoading]);
-
+  
   // Fetch question count
   useEffect(() => {
     const getCount = async () => {
@@ -195,11 +197,12 @@ export default function Bank() {
         const isModerator = user.type === 'moderator';
         const isTeacher = user.type === 'teacher';
         
-        // For teachers, add fixed filters for inCourse and isCorrect
+        // For teachers, add fixed filters for inCourse, isCorrect and DPS_approved
         const teacherFilters = isTeacher ? {
           ...filters,
           inCourse: ['Yes'],
-          isCorrect: ['Yes']
+          isCorrect: ['Yes'],
+          DPS_approved: ['Yes']
         } : filters;
         
         const countData = await fetchQuestionCount(teacherFilters, isModerator);

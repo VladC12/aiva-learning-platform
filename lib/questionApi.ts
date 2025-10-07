@@ -27,7 +27,8 @@ export const fetchQuestions = async (
     isHOTS: filters.isHOTS.join(','),
     isCorrect: filters.isCorrect.join(','),
     q_type: filters.q_type.join(','),
-    q_number: filters.q_number || '', // Ensure q_number is included
+    q_number: filters.q_number || '',
+    DPS_approved: filters.DPS_approved.join(','),
     // For moderators, only show questions that are marked as in course and correct
     moderatorView: isModerator
   };
@@ -62,6 +63,8 @@ export const fetchQuestionCount = async (
     isHOTS: filters.isHOTS.join(','),
     isCorrect: filters.isCorrect.join(','),
     q_type: filters.q_type.join(','),
+    DPS_approved: filters.DPS_approved.join(','),
+    q_number: filters.q_number || '',
     moderatorView: isModerator
   };
 

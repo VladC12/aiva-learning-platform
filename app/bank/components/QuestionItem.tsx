@@ -82,6 +82,18 @@ export default function QuestionItem({
     }
   };
 
+    const handleToggleApproved = async (newValue: boolean) => {
+    if (isReadOnly) return;
+
+    try {
+      // Update the DPS_approved field directly as it seems to be a standard field, not one with moderator variants
+      await updateQuestion(question._id, { DPS_approved: newValue });
+      onQuestionUpdate({ ...question, DPS_approved: newValue });
+    } catch (error) {
+      console.error('Error updating approval status:', error);
+    }
+  };
+
   const handleChangeQuestionType = async (newType: string) => {
     if (isReadOnly) return;
 
@@ -206,6 +218,19 @@ export default function QuestionItem({
               : question.isCorrect
             }
             onToggle={handleToggleCorrect}
+            trueLabel="Yes"
+            falseLabel="No"
+            unmarkedLabel="Unmarked"
+            trueBtnLabel="✓"
+            falseBtnLabel="✕"
+            readOnly={isReadOnly}
+          />
+        </div>}
+        {!isReadOnly &&
+        <div className={styles.questionApproved}>
+          <StatusToggle
+            value={question.DPS_approved}
+            onToggle={handleToggleApproved}
             trueLabel="Yes"
             falseLabel="No"
             unmarkedLabel="Unmarked"
