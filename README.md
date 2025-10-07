@@ -24,7 +24,9 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 Additional documentation can be found in the [docs](./docs) directory:
 
-- [User Activity Tracking](./docs/user-activity-tracking.md) - Information about the user activity tracking system
+- [Architecture Overview](./docs/architecture-overview.md) - Mermaind powered documentation of the platform overall.
+
+- [User Activity Tracking](./docs/user-activity-tracking.md) - Information about the user activity tracking system.
 
 ## Enviroment Variables
 
