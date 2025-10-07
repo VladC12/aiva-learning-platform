@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import Button from './Button';
 import styles from './PDFViewer.module.css';
-import { PDFCache } from '../services/pdfCache';
+import { PDFCache } from '../../services/pdfCache';
 
 const pdfCache = new PDFCache();
 
