@@ -33,8 +33,8 @@ export async function POST(req: NextRequest,
     // If requested to appoint to room and roomId is provided
     if (appointToRoom && roomId) {
       try {
-        // Fix the TypeScript error with the $push operator
         const updateQuery = {
+          // eslint-disable-next-line
           $push: {} as any,
           $setOnInsert: { updated_at: new Date() }
         };

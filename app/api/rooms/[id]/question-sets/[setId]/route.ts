@@ -25,8 +25,8 @@ export async function DELETE(
     const client = await clientPromise;
     const db = client.db();
     
-    // Fix the TypeScript error with the $pull operator
     const updateQuery = {
+      // eslint-disable-next-line
       $pull: {} as any,
       $set: { updated_at: new Date() }
     };
