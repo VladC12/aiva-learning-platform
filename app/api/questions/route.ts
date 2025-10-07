@@ -136,13 +136,46 @@ export async function POST(request: NextRequest) {
         }
       }
     }
+
+    // Handle DPS_approved filter (Yes/No/Unmarked)
+    // DPS_approved in the database is DPS_approved
+    if (params.DPS_approved) {
+      const DPS_approvedValues = params.DPS_approved.split(',');
+
+      if (DPS_approvedValues.length > 0 && DPS_approvedValues.length < 3) {
+        if (DPS_approvedValues.includes('Yes') && DPS_approvedValues.includes('No')) {
+          // Both Yes and No, but not Unmarked - exclude undefined
+          query['DPS_approved'] = { $ne: undefined };
+        } else if (DPS_approvedValues.includes('Yes') && DPS_approvedValues.includes('Unmarked')) {
+          // Yes and Unmarked, but not No
+          query.$or = query.$or || [];
+          query.$or.push({ 'DPS_approved': true });
+          query.$or.push({ 'DPS_approved': undefined });
+        } else if (DPS_approvedValues.includes('No') && DPS_approvedValues.includes('Unmarked')) {
+          // No and Unmarked, but not Yes
+          query.$or = query.$or || [];
+          query.$or.push({ 'DPS_approved': false });
+          query.$or.push({ 'DPS_approved': undefined });
+        } else if (DPS_approvedValues.includes('Yes')) {
+          // Only Yes
+          query['DPS_approved'] = true;
+        } else if (DPS_approvedValues.includes('No')) {
+          // Only No
+          query['DPS_approved'] = false;
+        } else if (DPS_approvedValues.includes('Unmarked')) {
+          // Only Unmarked
+          query['DPS_approved'] = undefined;
+        }
+      }
+    }
     
-    // Handle moderator view - only show questions marked as inCourse and isCorrect
+    // Handle moderator view - only show questions marked as inCourse, isCorrect and DPS approved
     if (params.moderatorView === true) {
-      // Add $and condition to ensure we only show questions that are marked as in course and correct
+      // Add $and condition to ensure we only show questions that are marked as in course, correct and DPS approved
       query.$and = query.$and || [];
       query.$and.push({ inCourse: true });
       query.$and.push({ isCorrect: true });
+      query.$and.push({ DPS_approved: true });
     }
 
     // Get pagination parameters
