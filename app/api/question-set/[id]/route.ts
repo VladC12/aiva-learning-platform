@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
-export async function POST(request: NextRequest,
+export async function GET(request: NextRequest,
   // eslint-disable-next-line
   context: any
 ) {
   try {
 
     const { params } = await context;
-    const { q } = await params;
+    const { id: q } = await params;
     
     if (!q) {
       return NextResponse.json({ error: 'Question set ID is required' }, { status: 400 });

@@ -82,7 +82,7 @@ export default function QuestionItem({
     }
   };
 
-    const handleToggleApproved = async (newValue: boolean) => {
+  const handleToggleApproved = async (newValue: boolean) => {
     if (isReadOnly) return;
 
     try {
@@ -138,7 +138,7 @@ export default function QuestionItem({
     : (question.q_type || '');
 
   return (
-    <div className={`${styles.questionItem} ${isSelected ? styles.selected : ''}`}>
+    <div className={`${isReadOnly ? styles.questionItemReadOnly : styles.questionItem} ${isSelected ? styles.selected : ''}`}>
       {isSelectable && (
         <div className={styles.questionSelect}>
           <input
@@ -195,21 +195,22 @@ export default function QuestionItem({
             readOnly={isReadOnly}
           />
         </div>}
-      <div className={styles.questionHOTS}>
-        <StatusToggle
-          value={isModerator
-            ? (question.modIsHOTS !== undefined ? question.modIsHOTS : question.isHOTS)
-            : question.isHOTS
-          }
-          onToggle={handleToggleHOTS}
-          trueLabel="Yes"
-          falseLabel="No"
-          unmarkedLabel="Unmarked"
-          trueBtnLabel="✓"
-          falseBtnLabel="✕"
-          readOnly={isReadOnly}
-        />
-      </div>
+      {!isReadOnly &&
+        <div className={styles.questionHOTS}>
+          <StatusToggle
+            value={isModerator
+              ? (question.modIsHOTS !== undefined ? question.modIsHOTS : question.isHOTS)
+              : question.isHOTS
+            }
+            onToggle={handleToggleHOTS}
+            trueLabel="Yes"
+            falseLabel="No"
+            unmarkedLabel="Unmarked"
+            trueBtnLabel="✓"
+            falseBtnLabel="✕"
+            readOnly={isReadOnly}
+          />
+        </div>}
       {!isReadOnly &&
         <div className={styles.questionCorrect}>
           <StatusToggle
@@ -226,7 +227,7 @@ export default function QuestionItem({
             readOnly={isReadOnly}
           />
         </div>}
-        {!isReadOnly &&
+      {!isReadOnly &&
         <div className={styles.questionApproved}>
           <StatusToggle
             value={question.DPS_approved}
