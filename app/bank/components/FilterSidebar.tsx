@@ -49,10 +49,6 @@ export default function FilterSidebar({
     onFilterChange({ inCourse: selected });
   };
 
-  const handleHOTSChange = (selected: string[]) => {
-    onFilterChange({ isHOTS: selected });
-  };
-
   const handleCorrectChange = (selected: string[]) => {
     onFilterChange({ isCorrect: selected });
   };
@@ -180,16 +176,6 @@ export default function FilterSidebar({
             />
           </div>
         )}
-
-        <div className={styles.filterItem}>
-          <label htmlFor="isHOTS">Higher Order Thinking Skills</label>
-          <MultiSelect
-            options={['Yes', 'No', 'Unmarked']}
-            value={filters.isHOTS || []}
-            onChange={handleHOTSChange}
-            placeholder="Filter by HOTS status"
-          />
-        </div>
 
         {!isTeacher && (
           <div className={styles.filterItem}>

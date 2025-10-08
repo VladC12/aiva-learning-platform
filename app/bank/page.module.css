@@ -176,7 +176,7 @@
 
 .questionHeader {
   display: grid;
-  grid-template-columns: 0.7fr 1fr 1fr 1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
   padding: 1rem;
   background-color: #f3f4f6;
   font-weight: 600;
@@ -188,7 +188,7 @@
 
 .questionItem {
   display: grid;
-  grid-template-columns: 0.7fr 1fr 1fr 1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
   padding: 1rem;
   border-top: 1px solid #eaeaea;
   min-height: 60px;
@@ -208,7 +208,7 @@
   color: #4b5563;
 }
 
-.questionHOTS, .questionCorrect {
+.questionCorrect {
   color: #4b5563;
 }
 

@@ -9,7 +9,6 @@ export interface QuestionQuery {
   q_type?: { $in: string[] };
   q_number?: number | { $eq: number };
   inCourse?: boolean | { $ne: undefined };
-  isHOTS?: boolean | { $ne: undefined };
   isCorrect?: boolean | { $ne: undefined };
   DPS_approved?: boolean | { $ne: undefined };
   $or?: Array<Record<string, any>>;
@@ -56,7 +55,6 @@ export interface Question {
   label?: string;
   q_number?: number;
   inCourse?: boolean;
-  isHOTS?: boolean;
   isCorrect?: boolean;
   DPS_approved?: boolean;
   q_type?: string;
@@ -64,7 +62,6 @@ export interface Question {
   // Moderator fields
   modDifficulty_level?: string;
   modInCourse?: boolean;
-  modIsHOTS?: boolean;
   modIsCorrect?: boolean;
   modQ_type?: string;
 }
@@ -84,7 +81,6 @@ export interface FilterState {
   topic: string[];
   difficulty_level: string[];
   inCourse: string[];
-  isHOTS: string[];
   isCorrect: string[];
   q_type: string[];
   q_number: string;
