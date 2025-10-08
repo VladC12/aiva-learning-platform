@@ -31,7 +31,6 @@ export default function Bank() {
     topic: [],
     difficulty_level: [],
     inCourse: [],
-    isHOTS: [],
     isCorrect: [],
     DPS_approved: [],
     q_type: [],

@@ -78,37 +78,6 @@ export async function POST(request: NextRequest) {
         }
       }
     }
-
-    // Handle isHOTS filter (Yes/No/Unmarked)
-    if (params.isHOTS) {
-      const isHOTSValues = params.isHOTS.split(',');
-      
-      if (isHOTSValues.length > 0 && isHOTSValues.length < 3) {
-        if (isHOTSValues.includes('Yes') && isHOTSValues.includes('No')) {
-          // Both Yes and No, but not Unmarked - exclude undefined
-          query.isHOTS = { $ne: undefined };
-        } else if (isHOTSValues.includes('Yes') && isHOTSValues.includes('Unmarked')) {
-          // Yes and Unmarked, but not No
-          query.$or = query.$or || [];
-          query.$or.push({ isHOTS: true });
-          query.$or.push({ isHOTS: undefined });
-        } else if (isHOTSValues.includes('No') && isHOTSValues.includes('Unmarked')) {
-          // No and Unmarked, but not Yes
-          query.$or = query.$or || [];
-          query.$or.push({ isHOTS: false });
-          query.$or.push({ isHOTS: undefined });
-        } else if (isHOTSValues.includes('Yes')) {
-          // Only Yes
-          query.isHOTS = true;
-        } else if (isHOTSValues.includes('No')) {
-          // Only No
-          query.isHOTS = false;
-        } else if (isHOTSValues.includes('Unmarked')) {
-          // Only Unmarked
-          query.isHOTS = undefined;
-        }
-      }
-    }
     
     // Handle isCorrect filter (Yes/No/Unmarked)
     if (params.isCorrect) {

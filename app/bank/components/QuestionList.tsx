@@ -68,7 +68,6 @@ export default function QuestionList({
         <div className={styles.questionDifficulty}>Difficulty</div>
         <div className={styles.questionClass}>Class</div>
         {!isReadOnly && <div className={styles.questionInCourse}>In Course</div>}
-        {!isReadOnly && <div className={styles.questionHOTS}>HOTS</div>}
         {!isReadOnly && <div className={styles.questionCorrect}>Correct</div>}
         {!isReadOnly && <div className={styles.questionApproved}>Approved</div>}
         <div className={styles.questionType}>Type</div>

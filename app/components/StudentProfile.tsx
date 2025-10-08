@@ -1,5 +1,4 @@
 import styles from './StudentProfile.module.css'
-import Link from 'next/link';
 import { UserData } from 'context/UserContext';
 import QuestionList from './QuestionList';
 import QuestionHistory from './QuestionHistory';

@@ -176,6 +176,7 @@ const QuestionHistory: React.FC<QuestionHistoryProps> = ({ user }) => {
     }, [user, allQuestionIds, pagination.page, pagination.limit]);
 
     // Create a memoized question item component to prevent unnecessary re-renders
+    // eslint-disable-next-line
     const QuestionItem = React.memo(({ id, data, onViewQuestion }: { 
         id: string, 
         data: TrackedQuestion, 
@@ -279,11 +280,13 @@ const QuestionHistory: React.FC<QuestionHistoryProps> = ({ user }) => {
                 onViewQuestion={handleViewQuestion} 
             />
         ));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [trackedQuestions, handleViewQuestion]);
 
     // Memoize pagination controls
     const paginationComponent = useMemo(() => {
         return <PaginationControls pagination={pagination} handlePageChange={handlePageChange} />;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pagination, handlePageChange]);
 
     return (
