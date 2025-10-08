@@ -55,6 +55,9 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ question, isOpen, onClose
                     ) : (
                         <>
                             <div className={styles.questionInfo}>
+                                {question.q_number !== undefined && (
+                                    <div><strong>Question #:</strong> {question.q_number}</div>
+                                )}
                                 <div><strong>Subject:</strong> {question.subject}</div>
                                 <div><strong>Topic:</strong> {question.topic}</div>
                                 <div><strong>Difficulty:</strong> {question.difficulty_level}</div>
