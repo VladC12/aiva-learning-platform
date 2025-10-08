@@ -270,8 +270,8 @@ function QuestionDisplay({
             <div className={styles.modalContent}>
                 <h2 className={styles.modalTitle}>Are you sure you want to leave?</h2>
                 <p className={styles.modalMessage}>
-                    You haven't completed all questions yet. Your progress so far has been saved, 
-                    but you'll lose this specific combination of questions if you leave now.
+                    You haven&apos;t completed all questions yet. Your progress so far has been saved, 
+                    but you&apos;ll lose this specific combination of questions if you leave now.
                 </p>
                 <div className={styles.modalButtons}>
                     <Button variant="primary" onClick={handleCancelExit}>
@@ -292,7 +292,7 @@ function QuestionDisplay({
                 <div className={styles.completionCard}>
                     <h1 className={styles.completionTitle}>Congratulations! 🎉</h1>
                     <p className={styles.completionMessage}>
-                        You've completed all {totalQuestions} questions in the set!
+                        You&apos;ve completed all {totalQuestions} questions in the set!
                     </p>
                     
                     <div className={styles.completionStats}>
