@@ -7,6 +7,46 @@ import PDFQuestionDisplay from './components/PdfQuestionDisplay';
 import QuestionDisplay from './components/QuestionDisplay';
 import { useUser } from 'context/UserContext';
 
+// Define the router events type since Next.js App Router doesn't expose them directly
+declare module 'next/navigation' {
+  interface AppRouterInstance {
+    events?: {
+      on: (event: string, callback: (...args: any[]) => void) => void;
+      off: (event: string, callback: (...args: any[]) => void) => void;
+      emit: (event: string, ...args: any[]) => void;
+    };
+  }
+}
+
+// Add router events simulation for Next.js App Router
+const useRouterEvents = (router: any) => {
+  useEffect(() => {
+    // Create a simple event emitter if it doesn't exist
+    if (!router.events) {
+      const events: {
+        [key: string]: ((...args: any[]) => void)[];
+      } = {};
+      
+      router.events = {
+        on: (event: string, callback: (...args: any[]) => void) => {
+          if (!events[event]) events[event] = [];
+          events[event].push(callback);
+        },
+        off: (event: string, callback: (...args: any[]) => void) => {
+          if (events[event]) {
+            events[event] = events[event].filter(cb => cb !== callback);
+          }
+        },
+        emit: (event: string, ...args: any[]) => {
+          if (events[event]) {
+            events[event].forEach(cb => cb(...args));
+          }
+        }
+      };
+    }
+  }, [router]);
+};
+
 // Main page component that uses Suspense boundary
 export default function QuestionsPage() {
   return (
@@ -33,6 +73,9 @@ function QuestionsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useUser();
+  
+  // Initialize router events
+  useRouterEvents(router);
 
   useEffect(() => {
     // Check for required URL parameters
@@ -85,7 +128,10 @@ function QuestionsContent() {
           setPdfQuestionSet(null);
         } else {
           // Build parameters object from search params for regular filtering
-          const paramObject: Record<string, string> = {};
+          const paramObject: Record<string, string | boolean> = {
+            DPS_approved: 'Yes' // Add DPS_approved requirement
+          };
+          
           requiredParams.forEach(param => {
             const value = searchParams.get(param);
             if (value) paramObject[param] = value;
@@ -94,6 +140,16 @@ function QuestionsContent() {
           // Add the question type if it exists
           const q_type = searchParams.get('q_type');
           if (q_type) paramObject.q_type = q_type;
+          
+          // Add amount parameter
+          const amount = searchParams.get('amount');
+          if (amount) paramObject.amount = amount;
+          
+          // Add user's question tracking data if available
+          if (user && user.question_tracking) {
+            paramObject.trackedQuestions = JSON.stringify(user.question_tracking);
+            paramObject.userId = user._id as string;
+          }
           
           console.log('Sending query parameters:', paramObject);
 
@@ -122,7 +178,7 @@ function QuestionsContent() {
     };
 
     fetchQuestions();
-  }, [router, searchParams]);
+  }, [router, searchParams, user]);
 
   if (loading) {
     return <div>Loading questions...</div>;
