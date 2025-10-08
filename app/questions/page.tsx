@@ -7,6 +7,7 @@ import PDFQuestionDisplay from './components/PdfQuestionDisplay';
 import QuestionDisplay from './components/QuestionDisplay';
 import { useUser } from 'context/UserContext';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Define the router events type since Next.js App Router doesn't expose them directly
 declare module 'next/navigation' {
   interface AppRouterInstance {
