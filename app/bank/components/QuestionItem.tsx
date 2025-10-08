@@ -58,18 +58,6 @@ export default function QuestionItem({
     }
   };
 
-  const handleToggleHOTS = async (newValue: boolean) => {
-    if (isReadOnly) return;
-
-    try {
-      const field = isModerator ? 'modIsHOTS' : 'isHOTS';
-      await updateQuestion(question._id, { [field]: newValue });
-      onQuestionUpdate({ ...question, [field]: newValue });
-    } catch (error) {
-      console.error('Error updating HOTS status:', error);
-    }
-  };
-
   const handleToggleCorrect = async (newValue: boolean) => {
     if (isReadOnly) return;
 
@@ -195,22 +183,7 @@ export default function QuestionItem({
             readOnly={isReadOnly}
           />
         </div>}
-      {!isReadOnly &&
-        <div className={styles.questionHOTS}>
-          <StatusToggle
-            value={isModerator
-              ? (question.modIsHOTS !== undefined ? question.modIsHOTS : question.isHOTS)
-              : question.isHOTS
-            }
-            onToggle={handleToggleHOTS}
-            trueLabel="Yes"
-            falseLabel="No"
-            unmarkedLabel="Unmarked"
-            trueBtnLabel="✓"
-            falseBtnLabel="✕"
-            readOnly={isReadOnly}
-          />
-        </div>}
+    
       {!isReadOnly &&
         <div className={styles.questionCorrect}>
           <StatusToggle

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { Question, QuestionQuery } from '@/models/Question';
+import { ObjectId } from 'mongodb';
 
 
 
@@ -11,6 +12,9 @@ export async function POST(request: NextRequest) {
 
     // Build MongoDB query from parameters
     const query: QuestionQuery = {};
+
+    // Always require DPS approved questions
+    query.DPS_approved = true;
 
     // Handle required single value parameters
     if (params.education_board) query.education_board = params.education_board;
@@ -74,37 +78,6 @@ export async function POST(request: NextRequest) {
         }
       }
     }
-
-    // Handle isHOTS filter (Yes/No/Unmarked)
-    if (params.isHOTS) {
-      const isHOTSValues = params.isHOTS.split(',');
-      
-      if (isHOTSValues.length > 0 && isHOTSValues.length < 3) {
-        if (isHOTSValues.includes('Yes') && isHOTSValues.includes('No')) {
-          // Both Yes and No, but not Unmarked - exclude undefined
-          query.isHOTS = { $ne: undefined };
-        } else if (isHOTSValues.includes('Yes') && isHOTSValues.includes('Unmarked')) {
-          // Yes and Unmarked, but not No
-          query.$or = query.$or || [];
-          query.$or.push({ isHOTS: true });
-          query.$or.push({ isHOTS: undefined });
-        } else if (isHOTSValues.includes('No') && isHOTSValues.includes('Unmarked')) {
-          // No and Unmarked, but not Yes
-          query.$or = query.$or || [];
-          query.$or.push({ isHOTS: false });
-          query.$or.push({ isHOTS: undefined });
-        } else if (isHOTSValues.includes('Yes')) {
-          // Only Yes
-          query.isHOTS = true;
-        } else if (isHOTSValues.includes('No')) {
-          // Only No
-          query.isHOTS = false;
-        } else if (isHOTSValues.includes('Unmarked')) {
-          // Only Unmarked
-          query.isHOTS = undefined;
-        }
-      }
-    }
     
     // Handle isCorrect filter (Yes/No/Unmarked)
     if (params.isCorrect) {
@@ -137,37 +110,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Handle DPS_approved filter (Yes/No/Unmarked)
-    // DPS_approved in the database is DPS_approved
-    if (params.DPS_approved) {
-      const DPS_approvedValues = params.DPS_approved.split(',');
-
-      if (DPS_approvedValues.length > 0 && DPS_approvedValues.length < 3) {
-        if (DPS_approvedValues.includes('Yes') && DPS_approvedValues.includes('No')) {
-          // Both Yes and No, but not Unmarked - exclude undefined
-          query['DPS_approved'] = { $ne: undefined };
-        } else if (DPS_approvedValues.includes('Yes') && DPS_approvedValues.includes('Unmarked')) {
-          // Yes and Unmarked, but not No
-          query.$or = query.$or || [];
-          query.$or.push({ 'DPS_approved': true });
-          query.$or.push({ 'DPS_approved': undefined });
-        } else if (DPS_approvedValues.includes('No') && DPS_approvedValues.includes('Unmarked')) {
-          // No and Unmarked, but not Yes
-          query.$or = query.$or || [];
-          query.$or.push({ 'DPS_approved': false });
-          query.$or.push({ 'DPS_approved': undefined });
-        } else if (DPS_approvedValues.includes('Yes')) {
-          // Only Yes
-          query['DPS_approved'] = true;
-        } else if (DPS_approvedValues.includes('No')) {
-          // Only No
-          query['DPS_approved'] = false;
-        } else if (DPS_approvedValues.includes('Unmarked')) {
-          // Only Unmarked
-          query['DPS_approved'] = undefined;
-        }
-      }
-    }
+    // Handle DPS_approved filter (Yes/No/Unmarked) - always set to true for filtering
+    // We're overriding any existing filter logic to ensure questions are always DPS approved
     
     // Handle moderator view - only show questions marked as inCourse, isCorrect and DPS approved
     if (params.moderatorView === true) {
@@ -186,19 +130,156 @@ export async function POST(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db();
 
-    // Log the final query for debugging
-    console.log('Final query:', JSON.stringify(query));
+    // Process user's question tracking history if available
+    let questionPool: Question[] = [];
+    
+    if (params.userId && params.trackedQuestions) {
+      let trackedQuestions;
+      try {
+        trackedQuestions = JSON.parse(params.trackedQuestions);
+      } catch (e) {
+        console.error("Failed to parse tracked questions:", e);
+        trackedQuestions = {};
+      }
+      
+      // Create arrays to hold different question IDs based on their status
+      const successQuestionIds: string[] = [];
+      const failedQuestionIds: string[] = [];
+      const unsureQuestionIds: string[] = [];
+      
+      // Sort tracked questions by status
+      Object.keys(trackedQuestions).forEach(questionId => {
+        const status = trackedQuestions[questionId].status;
+        if (status === 'success') {
+          successQuestionIds.push(questionId);
+        } else if (status === 'failed') {
+          failedQuestionIds.push(questionId);
+        } else if (status === 'unsure') {
+          unsureQuestionIds.push(questionId);
+        }
+      });
+      
+      // Convert string IDs to ObjectId instances
+      const successObjectIds = successQuestionIds.map(id => new ObjectId(id));
+      const failedObjectIds = failedQuestionIds.map(id => new ObjectId(id));
+      const unsureObjectIds = unsureQuestionIds.map(id => new ObjectId(id));
+      
+      // Query for fresh questions (not attempted by user)
+      const freshQuestionsQuery = {
+        ...query,
+        _id: { $nin: [...successObjectIds, ...failedObjectIds, ...unsureObjectIds] }
+      };
+      
+      // Set minimum percentages for review questions (Anki-like)
+      const MIN_FAILED_PERCENTAGE = 0.25; // At least 25% failed questions
+      const MIN_UNSURE_PERCENTAGE = 0.15; // At least 15% unsure questions
+      
+      // Calculate minimum counts
+      const minFailedCount = Math.ceil(limit * MIN_FAILED_PERCENTAGE);
+      const minUnsureCount = Math.ceil(limit * MIN_UNSURE_PERCENTAGE);
+      
+      // Calculate maximum fresh questions to allow
+      const maxFreshCount = limit - (minFailedCount + minUnsureCount);
+      
+      // Get fresh questions - limited to make room for review questions
+      const freshQuestions = await db.collection('Questions')
+        .find(freshQuestionsQuery)
+        .limit(maxFreshCount)
+        .toArray() as Question[];
+      
+      // Determine how many failed questions to include
+      let targetFailedCount = minFailedCount;
+      if (freshQuestions.length < maxFreshCount) {
+        // If we have fewer fresh questions than expected, increase the review questions
+        const shortfall = maxFreshCount - freshQuestions.length;
+        targetFailedCount += Math.floor(shortfall * 0.6); // 60% of shortfall goes to failed questions
+      }
+      
+      // Get failed questions if available
+      let failedQuestions: Question[] = [];
+      if (failedQuestionIds.length > 0) {
+        const failedToIncludeCount = Math.min(targetFailedCount, failedQuestionIds.length);
+        
+        // Randomly select a subset of failed questions
+        const randomFailedIds = failedQuestionIds
+          .sort(() => 0.5 - Math.random())
+          .slice(0, failedToIncludeCount)
+          .map(id => new ObjectId(id)); // Convert to ObjectId
+        
+        if (randomFailedIds.length > 0) {
+          failedQuestions = await db.collection('Questions')
+            .find({ ...query, _id: { $in: randomFailedIds } })
+            .toArray() as Question[];
+        }
+      }
+      
+      // Determine how many unsure questions to include
+      let targetUnsureCount = minUnsureCount;
+      if (freshQuestions.length < maxFreshCount && failedQuestions.length < targetFailedCount) {
+        // If we have fewer fresh AND failed questions than expected, put more into unsure
+        const totalShortfall = (maxFreshCount - freshQuestions.length) + 
+                              (targetFailedCount - failedQuestions.length);
+        targetUnsureCount += totalShortfall;
+      }
+      
+      // Get unsure questions if available
+      let unsureQuestions: Question[] = [];
+      if (unsureQuestionIds.length > 0) {
+        const unsureToIncludeCount = Math.min(targetUnsureCount, unsureQuestionIds.length);
+        
+        // Randomly select a subset of unsure questions
+        const randomUnsureIds = unsureQuestionIds
+          .sort(() => 0.5 - Math.random())
+          .slice(0, unsureToIncludeCount)
+          .map(id => new ObjectId(id)); // Convert to ObjectId
+        
+        if (randomUnsureIds.length > 0) {
+          unsureQuestions = await db.collection('Questions')
+            .find({ ...query, _id: { $in: randomUnsureIds } })
+            .toArray() as Question[];
+        }
+      }
+      
+      // Combine all question types
+      questionPool = [...freshQuestions, ...failedQuestions, ...unsureQuestions];
+      
+      // If we still don't have enough questions, just get any that match the criteria
+      if (questionPool.length < limit) {
+        const additionalQuestions = await db.collection('Questions')
+          .find(query)
+          .skip(questionPool.length)  // Skip ones we already have
+          .limit(limit - questionPool.length)
+          .toArray() as Question[];
+          
+        questionPool = [...questionPool, ...additionalQuestions];
+      }
+      
+      // Shuffle the questions to mix fresh with review questions
+      questionPool = questionPool.sort(() => 0.5 - Math.random());
+      
+      // Limit to requested number
+      questionPool = questionPool.slice(0, limit);
+      
+      console.log(`Found ${questionPool.length} questions based on user tracking history`);
+      console.log(`Composition: ${freshQuestions.length} fresh, ${failedQuestions.length} failed, ${unsureQuestions.length} unsure`);
+      
+      return NextResponse.json(questionPool);
+    } else {
+      // Standard query without user tracking
+      // Log the final query for debugging
+      console.log('Final query:', JSON.stringify(query));
 
-    // Find questions matching the criteria with pagination
-    const questions = await db.collection('Questions')
-      .find(query)
-      .skip(skip)
-      .limit(limit)
-      .toArray();
+      // Find questions matching the criteria with pagination
+      const questions = await db.collection('Questions')
+        .find(query)
+        .skip(skip)
+        .limit(limit)
+        .toArray();
 
-    console.log(`Found ${questions.length} matching questions for page ${page}, limit ${limit}, skip ${skip}`);
+      console.log(`Found ${questions.length} matching questions for page ${page}, limit ${limit}, skip ${skip}`);
 
-    return NextResponse.json(questions as Question[]);
+      return NextResponse.json(questions as Question[]);
+    }
   } catch (error) {
     console.error('Failed to fetch questions:', error);
     return NextResponse.json(

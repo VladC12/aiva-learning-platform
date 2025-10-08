@@ -22,6 +22,7 @@ interface FilterState {
   topic: string[];
   difficulty_level: string[];
   q_type: string[]; // Added question type filter
+  amount: string; // Added amount filter
 }
 
 export default function Home() {
@@ -38,8 +39,19 @@ export default function Home() {
     subject: '',
     topic: [],
     difficulty_level: [],
-    q_type: []
+    q_type: [],
+    amount: '10' // Default to 10 questions
   });
+  
+  // Available question amount options
+  const amountOptions = [
+    { value: '5', label: '5 Questions' },
+    { value: '10', label: '10 Questions' },
+    { value: '15', label: '15 Questions' },
+    { value: '20', label: '20 Questions' },
+    { value: '25', label: '25 Questions' },
+    { value: '30', label: '30 Questions' }
+  ];
   
   useEffect(() => {
     const fetchFilters = async () => {
@@ -223,7 +235,8 @@ export default function Home() {
       subject: filters.subject,
       topic: filters.topic.join(','),
       difficulty_level: filters.difficulty_level.join(','),
-      q_type: filters.q_type.join(',')
+      q_type: filters.q_type.join(','),
+      amount: filters.amount // Add amount parameter
     });
     router.push(`/questions?${params.toString()}`);
   };
@@ -307,6 +320,16 @@ export default function Home() {
               value={filters.q_type}
               onChange={handleQuestionTypeChange}
               placeholder="Select question types"
+            />
+          </div>
+
+          <div className={styles.filterItem}>
+            <Dropdown
+              label="Number of Questions"
+              value={filters.amount}
+              onChange={(value) => setFilters(prev => ({ ...prev, amount: value }))}
+              options={amountOptions}
+              placeholder="Select number of questions"
             />
           </div>
         </div>

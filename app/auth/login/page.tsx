@@ -130,12 +130,12 @@ export default function LoginPage() {
       <div className={styles.header}>
         <h1>Login</h1>
         <div className={styles.links}>
-          <span>
+          {/* <span>
             Don&apos;t have an account?{' '}
             <Link href="/auth/signup" className={styles.toggleLink}>
               Sign Up
             </Link>
-          </span>
+          </span> */}
           <Link href="/auth/recover" className={styles.toggleLink}>
             Forgot Password?
           </Link>

@@ -36,7 +36,6 @@ erDiagram
         string q_type
         number q_number
         boolean inCourse
-        boolean isHOTS
         boolean isCorrect
     }
 
