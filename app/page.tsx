@@ -317,13 +317,7 @@ export default function Home() {
       </form>
       
       {/* Display two question lists: global and room-specific */}
-      <div className={styles.questionListsContainer}>
-        {/* Global question sets (not filtered by room) */}
-        <QuestionList 
-          title="Global Question Sets" 
-          filterByRoom={false} 
-        />
-        
+      <div className={styles.questionListsContainer}> 
         {/* Room-specific question sets (only if user has a room) */}
         {user?.room && (
           <QuestionList 

@@ -30,7 +30,7 @@ export default function QuestionSetBuilder({
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [freeformQuestions, setFreeformQuestions] = useState<Question[]>([]);
-  const [appointToRoom, setAppointToRoom] = useState(false);
+  const [appointToRoom, _setAppointToRoom] = useState(true);
   const { user } = useUser();
   
   // Questions organized by section and type
@@ -236,7 +236,7 @@ export default function QuestionSetBuilder({
           </div>
         </div>
         
-        {user?.type === 'teacher' && user?.room && (
+        {/* {user?.type === 'teacher' && user?.room && (
           <div className={styles.formGroup}>
             <label className={styles.checkboxContainer}>
               <input
@@ -248,7 +248,7 @@ export default function QuestionSetBuilder({
               <span>Appoint this question set to my room</span>
             </label>
           </div>
-        )}
+        )} */}
         
         <div className={styles.sectionsContainer}>
           {builderMode === 'dps' ? (
