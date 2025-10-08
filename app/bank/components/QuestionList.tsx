@@ -60,7 +60,7 @@ export default function QuestionList({
   
   return (
     <div className={styles.questionList}>
-      <div className={styles.questionHeader}>
+      <div className={isReadOnly ? styles.questionHeaderReadOnly : styles.questionHeader}>
         {isSelectable && <div className={styles.questionSelect}></div>}
         <div className={styles.questionNumber}>Nr</div>
         <div className={styles.questionTopic}>Topic</div>
@@ -68,7 +68,7 @@ export default function QuestionList({
         <div className={styles.questionDifficulty}>Difficulty</div>
         <div className={styles.questionClass}>Class</div>
         {!isReadOnly && <div className={styles.questionInCourse}>In Course</div>}
-        <div className={styles.questionHOTS}>HOTS</div>
+        {!isReadOnly && <div className={styles.questionHOTS}>HOTS</div>}
         {!isReadOnly && <div className={styles.questionCorrect}>Correct</div>}
         {!isReadOnly && <div className={styles.questionApproved}>Approved</div>}
         <div className={styles.questionType}>Type</div>
