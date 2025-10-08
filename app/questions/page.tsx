@@ -167,6 +167,31 @@ function QuestionsContent() {
           }
 
           const data = await response.json();
+          
+          // Log the breakdown of difficulty levels in the response (for debugging)
+          if (data && data.length > 0) {
+            const difficultyBreakdown = data.reduce((acc: Record<string, number>, q: Question) => {
+              const difficulty = q.difficulty_level?.toLowerCase() || 'unknown';
+              acc[difficulty] = (acc[difficulty] || 0) + 1;
+              return acc;
+            }, {});
+            
+            console.log('Question difficulty breakdown:', difficultyBreakdown);
+            
+            // Log topic breakdown if we have multiple topics
+            if (paramObject.topic && typeof paramObject.topic === 'string' && paramObject.topic.includes(',')) {
+              const topicBreakdown = data.reduce((acc: Record<string, number>, q: Question) => {
+                const topic = Array.isArray(q.topic) ? q.topic[0] : q.topic;
+                if (topic) {
+                  acc[topic] = (acc[topic] || 0) + 1;
+                }
+                return acc;
+              }, {});
+              
+              console.log('Question topic breakdown:', topicBreakdown);
+            }
+          }
+          
           setQuestions(data);
           setPdfQuestionSet(null);
         }
