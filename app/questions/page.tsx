@@ -52,14 +52,8 @@ function QuestionsContent() {
       try {
         if (questionSetId && isPdfQuestionSet) {
           // Handle PDF question set loading
-          const response = await fetch('/api/question-set', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              q: questionSetId
-            }),
+          const response = await fetch(`/api/question-set/${questionSetId}`, {
+            method: 'GET',
           });
 
           if (!response.ok) {
@@ -75,14 +69,8 @@ function QuestionsContent() {
           }
         } else if (questionSetId) {
           // Handle regular question set loading
-          const response = await fetch('/api/question-set', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              q: questionSetId
-            }),
+          const response = await fetch(`/api/question-set/${questionSetId}`, {
+            method: 'GET',
           });
 
           if (!response.ok) {

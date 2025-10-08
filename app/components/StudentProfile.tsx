@@ -4,6 +4,7 @@ import { Question, TrackedQuestion } from '@/models/Question';
 import { UserData } from 'context/UserContext';
 import { useEffect, useState } from 'react';
 import QuestionModal from './QuestionModal';
+import QuestionList from './QuestionList';
 
 interface Props {
     user: UserData;
@@ -256,6 +257,17 @@ const StudentProfile: React.FC<Props> = ({ user }) => {
                     </div>
                 </div>
             </div>
+
+            {/* Add Question Sets section for students with a room */}
+            {user?.room && (
+                <div className={styles.roomQuestionSets}>
+                    <QuestionList 
+                        roomId={user.room}
+                        filterByRoom={true}
+                        title="Class Question Sets"
+                    />
+                </div>
+            )}
 
             <div className={styles.questionHistory}>
                 <h2>Question History</h2>
