@@ -69,6 +69,7 @@ function QuestionsContent() {
     label: string;
   } | null>(null);
   const [questionSetLabel, setQuestionSetLabel] = useState<string>('Question Set');
+  const [questionSetIdState, setQuestionSetIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -112,20 +113,22 @@ function QuestionsContent() {
             throw new Error('Invalid PDF question set format');
           }
         } else if (questionSetId) {
+          setQuestionSetIdState(questionSetId)
+          console.log('Loading regular question set with ID:', questionSetId);
           // Handle regular question set loading
           const response = await fetch(`/api/question-set/${questionSetId}`, {
             method: 'GET',
           });
-
+          
           if (!response.ok) {
             throw new Error('Failed to fetch question set');
           }
-
+          
           const data = await response.json();
           setQuestions(data.questions || data);
-          if (data.label) {
-            setQuestionSetLabel(data.label);
-          }
+          setQuestionSetLabel(data.label || 'Unnamned Question Set');
+          console.log('Fetched questions for question set:', data);
+         
           setPdfQuestionSet(null);
         } else {
           // Build parameters object from search params for regular filtering
@@ -229,6 +232,7 @@ function QuestionsContent() {
     <QuestionDisplay 
       questions={questions} 
       questionSetLabel={questionSetLabel}
+      questionSetId={questionSetIdState}
       canGeneratePdf={canGeneratePdf}
     />
   );
