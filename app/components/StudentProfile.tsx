@@ -4,6 +4,7 @@ import { UserData } from 'context/UserContext';
 import QuestionList from './QuestionList';
 import QuestionHistory from './QuestionHistory';
 import StudentAnalytics from './StudentAnalytics';
+import QuestionSetHistory from './QuestionSetHistory';
 import { Question } from '@/models/Question';
 
 interface Props {
@@ -129,6 +130,10 @@ const StudentProfile: React.FC<Props> = ({ user }) => {
                     </div>
                 </div>
             </div>
+
+            {/* Question Set Completion History */}
+            <QuestionSetHistory user={user} />
+            
             {/* Add Question Sets section for students with a room */}
             {user?.room && (
                 <div className={styles.roomQuestionSets}>
@@ -139,7 +144,8 @@ const StudentProfile: React.FC<Props> = ({ user }) => {
                     />
                 </div>
             )}
-            {/* New Analytics Component */}
+            
+            {/* Analytics Component */}
             {loadingAnalytics ? (
                 <div className={styles.analyticsContainer}>
                     <h2>Performance Analytics</h2>
