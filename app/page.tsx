@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import MultiSelect from './components/MultiSelect';
 import Dropdown from './components/Dropdown';
+import NumberInput from './components/NumberInput';
 import QuestionList from './components/QuestionList';
 import { useUser } from 'context/UserContext';
 
@@ -40,18 +41,8 @@ export default function Home() {
     topic: [],
     difficulty_level: [],
     q_type: [],
-    amount: '10' // Default to 10 questions
+    amount: '30' // Default to 30 questions
   });
-  
-  // Available question amount options
-  const amountOptions = [
-    { value: '5', label: '5 Questions' },
-    { value: '10', label: '10 Questions' },
-    { value: '15', label: '15 Questions' },
-    { value: '20', label: '20 Questions' },
-    { value: '25', label: '25 Questions' },
-    { value: '30', label: '30 Questions' }
-  ];
   
   useEffect(() => {
     const fetchFilters = async () => {
@@ -229,6 +220,9 @@ export default function Home() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // No need for additional normalization here since NumberInput 
+    // already normalizes values on blur, increment/decrement, and Enter key
     const params = new URLSearchParams({
       education_board: filters.education_board,
       class: filters.class,
@@ -236,7 +230,7 @@ export default function Home() {
       topic: filters.topic.join(','),
       difficulty_level: filters.difficulty_level.join(','),
       q_type: filters.q_type.join(','),
-      amount: filters.amount // Add amount parameter
+      amount: filters.amount // NumberInput ensures this is already correctly formatted
     });
     router.push(`/questions?${params.toString()}`);
   };
@@ -324,12 +318,14 @@ export default function Home() {
           </div>
 
           <div className={styles.filterItem}>
-            <Dropdown
+            <NumberInput
               label="Number of Questions"
               value={filters.amount}
               onChange={(value) => setFilters(prev => ({ ...prev, amount: value }))}
-              options={amountOptions}
-              placeholder="Select number of questions"
+              min={5}
+              max={60}
+              step={5}
+              placeholder="Enter number of questions"
             />
           </div>
         </div>

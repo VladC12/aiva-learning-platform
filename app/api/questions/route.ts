@@ -3,7 +3,150 @@ import clientPromise from '@/lib/mongodb';
 import { Question, QuestionQuery } from '@/models/Question';
 import { ObjectId } from 'mongodb';
 
+/**
+ * Balances questions by difficulty level and topics
+ * @param questions All questions matching the base criteria
+ * @param limit Number of questions to return
+ * @param hasDifficultyFilter Whether a specific difficulty filter was applied
+ * @param selectedTopics Array of selected topics (if any)
+ * @returns Balanced set of questions
+ */
+async function balanceQuestions(
+  questions: Question[],
+  limit: number,
+  hasDifficultyFilter: boolean,
+  selectedTopics: string[] | null
+): Promise<Question[]> {
+  // If we have fewer questions than the limit, return all of them
+  if (questions.length <= limit) {
+    return questions;
+  }
 
+  // Create a balanced set based on difficulty if no specific difficulty was requested
+  if (!hasDifficultyFilter) {
+    // Group questions by difficulty
+    const easyQuestions = questions.filter(q => q.difficulty_level?.toLowerCase() === 'easy');
+    const mediumQuestions = questions.filter(q => q.difficulty_level?.toLowerCase() === 'medium');
+    const hardQuestions = questions.filter(q => q.difficulty_level?.toLowerCase() === 'hard');
+    
+    // Ensure we have at least one hard question if available
+    const minHardCount = hardQuestions.length > 0 ? 1 : 0;
+    
+    // Calculate how many of each difficulty we need
+    let hardCount = Math.max(minHardCount, Math.round(limit * 0.2));  // At least 1 hard question if available
+    const easyCount = Math.round(limit * 0.3);  // 30% easy
+    
+    // Adjust counts if we don't have enough questions
+    if (hardCount > hardQuestions.length) {
+      hardCount = hardQuestions.length;
+    }
+    
+    // Medium gets the remainder, but ensure we don't go over the limit
+    const mediumCount = limit - easyCount - hardCount;
+    
+    // Random selection function
+    const getRandomSubset = (arr: Question[], count: number) => {
+      return arr.sort(() => 0.5 - Math.random()).slice(0, count);
+    };
+    
+    // Get our balanced selection
+    let balancedQuestions: Question[] = [
+      ...getRandomSubset(easyQuestions, Math.min(easyCount, easyQuestions.length)),
+      ...getRandomSubset(mediumQuestions, Math.min(mediumCount, mediumQuestions.length)),
+      ...getRandomSubset(hardQuestions, Math.min(hardCount, hardQuestions.length))
+    ];
+    
+    // If we don't have enough questions in one category, redistribute
+    const remaining = limit - balancedQuestions.length;
+    if (remaining > 0) {
+      // Combine all questions and remove the ones we've already selected
+      const remainingQuestions = questions.filter(q => 
+        !balancedQuestions.some(bq => bq._id.toString() === q._id.toString())
+      );
+      
+      // Add random questions to fill the gap
+      balancedQuestions = [
+        ...balancedQuestions,
+        ...getRandomSubset(remainingQuestions, remaining)
+      ];
+    }
+    
+    questions = balancedQuestions;
+  }
+
+  // Balance topics if multiple topics were selected
+  if (selectedTopics && selectedTopics.length > 1) {
+    // Group questions by topic
+    const questionsByTopic: Record<string, Question[]> = {};
+    
+    // Some questions may have multiple topics, so we need to handle that
+    questions.forEach(question => {
+      const questionTopics = Array.isArray(question.topic) ? question.topic : [question.topic];
+      
+      // Only consider topics that were in the original selection
+      const relevantTopics = questionTopics.filter(topic => 
+        selectedTopics.includes(topic)
+      );
+      
+      // If no relevant topics, skip this question
+      if (relevantTopics.length === 0) return;
+      
+      // Randomly assign the question to one of its topics for balancing
+      const randomTopic = relevantTopics[Math.floor(Math.random() * relevantTopics.length)];
+      
+      if (!questionsByTopic[randomTopic]) {
+        questionsByTopic[randomTopic] = [];
+      }
+      questionsByTopic[randomTopic].push(question);
+    });
+    
+    // Calculate how many questions per topic we should include
+    const topicsWithQuestions = Object.keys(questionsByTopic);
+    const questionsPerTopic = Math.floor(limit / topicsWithQuestions.length);
+    let remainder = limit % topicsWithQuestions.length;
+    
+    // Get balanced questions by topic
+    let balancedByTopic: Question[] = [];
+    
+    topicsWithQuestions.forEach(topic => {
+      const topicQuestions = questionsByTopic[topic];
+      // Take questionsPerTopic + 1 extra if we have remainder
+      const takeCount = questionsPerTopic + (remainder > 0 ? 1 : 0);
+      if (remainder > 0) remainder--;
+      
+      // Get random subset for this topic
+      const selected = topicQuestions
+        .sort(() => 0.5 - Math.random())
+        .slice(0, Math.min(takeCount, topicQuestions.length));
+        
+      balancedByTopic = [...balancedByTopic, ...selected];
+    });
+    
+    // If we still don't have enough questions, add random ones to fill the gap
+    if (balancedByTopic.length < limit) {
+      const remaining = limit - balancedByTopic.length;
+      const remainingQuestions = questions.filter(q => 
+        !balancedByTopic.some(bq => bq._id.toString() === q._id.toString())
+      );
+      
+      const additionalQuestions = remainingQuestions
+        .sort(() => 0.5 - Math.random())
+        .slice(0, remaining);
+        
+      balancedByTopic = [...balancedByTopic, ...additionalQuestions];
+    }
+    
+    // If we ended up with too many questions (unlikely), trim the excess
+    if (balancedByTopic.length > limit) {
+      balancedByTopic = balancedByTopic.slice(0, limit);
+    }
+    
+    questions = balancedByTopic;
+  }
+  
+  // Shuffle the final set of questions to avoid having them grouped by difficulty or topic
+  return questions.sort(() => 0.5 - Math.random());
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +156,7 @@ export async function POST(request: NextRequest) {
     // Build MongoDB query from parameters
     const query: QuestionQuery = {};
 
-    // Always require DPS approved questions
+    // Always require DPS approved questions - this is the core requirement
     query.DPS_approved = true;
 
     // Handle required single value parameters
@@ -31,11 +174,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Track if specific difficulty levels were requested
+    let hasDifficultyFilter = false;
+    let selectedTopics: string[] | null = null;
+
     // Handle comma-separated topics with $in operator
     // If topic is missing or empty, don't filter by topic (include all topics)
     if (params.topic && params.topic.trim() !== '') {
-      const topics = params.topic.split(',').map((t: string) => t.trim());
-      query.topic = { $in: topics };
+      selectedTopics = params.topic.split(',').map((t: string) => t.trim());
+      if (selectedTopics && selectedTopics.length > 0) {
+        query.topic = { $in: selectedTopics };
+      }
     }
 
     // Handle comma-separated difficulty levels with $in operator
@@ -43,6 +192,7 @@ export async function POST(request: NextRequest) {
     if (params.difficulty_level && params.difficulty_level.trim() !== '') {
       const difficultyLevels = params.difficulty_level.split(',').map((d: string) => d.trim());
       query.difficulty_level = { $in: difficultyLevels };
+      hasDifficultyFilter = true;
     }
 
     // Handle comma-separated question types with $in operator
@@ -110,16 +260,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Handle DPS_approved filter (Yes/No/Unmarked) - always set to true for filtering
-    // We're overriding any existing filter logic to ensure questions are always DPS approved
-    
-    // Handle moderator view - only show questions marked as inCourse, isCorrect and DPS approved
+    // Handle moderator view - but ensure DPS_approved is always kept as true
     if (params.moderatorView === true) {
-      // Add $and condition to ensure we only show questions that are marked as in course, correct and DPS approved
+      // Add $and condition only for inCourse and isCorrect
       query.$and = query.$and || [];
       query.$and.push({ inCourse: true });
       query.$and.push({ isCorrect: true });
-      query.$and.push({ DPS_approved: true });
+      // No need to add DPS_approved here as it's already set at the top level
     }
 
     // Get pagination parameters
@@ -165,8 +312,10 @@ export async function POST(request: NextRequest) {
       const unsureObjectIds = unsureQuestionIds.map(id => new ObjectId(id));
       
       // Query for fresh questions (not attempted by user)
+      // Ensure DPS_approved is still true in all nested queries
       const freshQuestionsQuery = {
         ...query,
+        DPS_approved: true, // Explicitly set to ensure it's not overridden
         _id: { $nin: [...successObjectIds, ...failedObjectIds, ...unsureObjectIds] }
       };
       
@@ -181,11 +330,21 @@ export async function POST(request: NextRequest) {
       // Calculate maximum fresh questions to allow
       const maxFreshCount = limit - (minFailedCount + minUnsureCount);
       
-      // Get fresh questions - limited to make room for review questions
-      const freshQuestions = await db.collection('Questions')
+      // Get all matching questions first for balancing - for fresh questions
+      const allFreshQuestions = await db.collection('Questions')
         .find(freshQuestionsQuery)
-        .limit(maxFreshCount)
         .toArray() as Question[];
+      
+      // Balance fresh questions based on difficulty and topics
+      const balancedFreshQuestions = await balanceQuestions(
+        allFreshQuestions,
+        maxFreshCount,
+        hasDifficultyFilter,
+        selectedTopics
+      );
+      
+      // Get fresh questions - limited to make room for review questions
+      const freshQuestions = balancedFreshQuestions.slice(0, maxFreshCount);
       
       // Determine how many failed questions to include
       let targetFailedCount = minFailedCount;
@@ -200,16 +359,26 @@ export async function POST(request: NextRequest) {
       if (failedQuestionIds.length > 0) {
         const failedToIncludeCount = Math.min(targetFailedCount, failedQuestionIds.length);
         
-        // Randomly select a subset of failed questions
-        const randomFailedIds = failedQuestionIds
-          .sort(() => 0.5 - Math.random())
-          .slice(0, failedToIncludeCount)
-          .map(id => new ObjectId(id)); // Convert to ObjectId
-        
-        if (randomFailedIds.length > 0) {
-          failedQuestions = await db.collection('Questions')
-            .find({ ...query, _id: { $in: randomFailedIds } })
-            .toArray() as Question[];
+        // Get all failed questions that match criteria
+        // Ensure DPS_approved is still true for failed questions
+        const allFailedQuestions = await db.collection('Questions')
+          .find({ 
+            ...query, 
+            DPS_approved: true, // Explicitly set to ensure it's not overridden
+            _id: { $in: failedQuestionIds.map(id => new ObjectId(id)) } 
+          })
+          .toArray() as Question[];
+          
+        // Balance failed questions (if there are enough)
+        if (allFailedQuestions.length > failedToIncludeCount) {
+          failedQuestions = await balanceQuestions(
+            allFailedQuestions,
+            failedToIncludeCount,
+            hasDifficultyFilter,
+            selectedTopics
+          );
+        } else {
+          failedQuestions = allFailedQuestions;
         }
       }
       
@@ -225,18 +394,27 @@ export async function POST(request: NextRequest) {
       // Get unsure questions if available
       let unsureQuestions: Question[] = [];
       if (unsureQuestionIds.length > 0) {
+        // Get all unsure questions that match criteria
+        // Ensure DPS_approved is still true for unsure questions
+        const allUnsureQuestions = await db.collection('Questions')
+          .find({ 
+            ...query, 
+            DPS_approved: true, // Explicitly set to ensure it's not overridden
+            _id: { $in: unsureQuestionIds.map(id => new ObjectId(id)) } 
+          })
+          .toArray() as Question[];
+          
+        // Balance unsure questions (if there are enough)
         const unsureToIncludeCount = Math.min(targetUnsureCount, unsureQuestionIds.length);
-        
-        // Randomly select a subset of unsure questions
-        const randomUnsureIds = unsureQuestionIds
-          .sort(() => 0.5 - Math.random())
-          .slice(0, unsureToIncludeCount)
-          .map(id => new ObjectId(id)); // Convert to ObjectId
-        
-        if (randomUnsureIds.length > 0) {
-          unsureQuestions = await db.collection('Questions')
-            .find({ ...query, _id: { $in: randomUnsureIds } })
-            .toArray() as Question[];
+        if (allUnsureQuestions.length > unsureToIncludeCount) {
+          unsureQuestions = await balanceQuestions(
+            allUnsureQuestions,
+            unsureToIncludeCount,
+            hasDifficultyFilter,
+            selectedTopics
+          );
+        } else {
+          unsureQuestions = allUnsureQuestions;
         }
       }
       
@@ -245,13 +423,29 @@ export async function POST(request: NextRequest) {
       
       // If we still don't have enough questions, just get any that match the criteria
       if (questionPool.length < limit) {
-        const additionalQuestions = await db.collection('Questions')
-          .find(query)
-          .skip(questionPool.length)  // Skip ones we already have
-          .limit(limit - questionPool.length)
+        // Ensure DPS_approved is still true in the final query
+        const finalQuery = { ...query, DPS_approved: true };
+        
+        // Get all matching questions
+        const allRemainingQuestions = await db.collection('Questions')
+          .find(finalQuery)
           .toArray() as Question[];
           
-        questionPool = [...questionPool, ...additionalQuestions];
+        // Filter out questions we already have
+        const questionIds = questionPool.map(q => q._id.toString());
+        const remainingQuestions = allRemainingQuestions.filter(q => 
+          !questionIds.includes(q._id.toString())
+        );
+        
+        // Balance remaining questions
+        const balancedRemaining = await balanceQuestions(
+          remainingQuestions,
+          limit - questionPool.length,
+          hasDifficultyFilter,
+          selectedTopics
+        );
+          
+        questionPool = [...questionPool, ...balancedRemaining];
       }
       
       // Shuffle the questions to mix fresh with review questions
@@ -266,19 +460,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(questionPool);
     } else {
       // Standard query without user tracking
+      // Ensure DPS_approved is still true in the final query
+      const finalQuery = { ...query, DPS_approved: true };
+      
       // Log the final query for debugging
-      console.log('Final query:', JSON.stringify(query));
+      console.log('Final query:', JSON.stringify(finalQuery));
 
-      // Find questions matching the criteria with pagination
-      const questions = await db.collection('Questions')
-        .find(query)
-        .skip(skip)
-        .limit(limit)
-        .toArray();
+      // Find all questions matching the criteria (without pagination)
+      const allQuestions = await db.collection('Questions')
+        .find(finalQuery)
+        .toArray() as Question[];
+        
+      console.log(`Found ${allQuestions.length} matching questions before balancing`);
+      
+      // Apply balancing algorithm
+      const balancedQuestions = await balanceQuestions(
+        allQuestions, 
+        limit, 
+        hasDifficultyFilter,
+        selectedTopics
+      );
+      
+      // Apply pagination to the balanced questions
+      const pagedQuestions = balancedQuestions.slice(skip, skip + limit);
+      
+      console.log(`Returning ${pagedQuestions.length} balanced questions for page ${page}, limit ${limit}`);
 
-      console.log(`Found ${questions.length} matching questions for page ${page}, limit ${limit}, skip ${skip}`);
-
-      return NextResponse.json(questions as Question[]);
+      return NextResponse.json(pagedQuestions);
     }
   } catch (error) {
     console.error('Failed to fetch questions:', error);

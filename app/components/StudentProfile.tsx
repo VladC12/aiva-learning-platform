@@ -1,13 +1,72 @@
+import React, { useState, useEffect } from 'react';
 import styles from './StudentProfile.module.css'
 import { UserData } from 'context/UserContext';
 import QuestionList from './QuestionList';
 import QuestionHistory from './QuestionHistory';
+import StudentAnalytics from './StudentAnalytics';
+import QuestionSetHistory from './QuestionSetHistory';
+import { Question } from '@/models/Question';
 
 interface Props {
     user: UserData;
 }
 
 const StudentProfile: React.FC<Props> = ({ user }) => {
+    const [questionData, setQuestionData] = useState<Record<string, Question>>({});
+    const [loadingAnalytics, setLoadingAnalytics] = useState<boolean>(true);
+
+    useEffect(() => {
+        // Fetch question data for analytics
+        const fetchQuestionData = async () => {
+            if (!user?.question_tracking) {
+                setLoadingAnalytics(false);
+                return;
+            }
+
+            try {
+                setLoadingAnalytics(true);
+                const questionIds = Object.keys(user.question_tracking).filter(
+                    id => !user.question_tracking?.[id]?.isPdfQuestionSet
+                );
+                
+                if (questionIds.length === 0) {
+                    setLoadingAnalytics(false);
+                    return;
+                }
+                
+                // Fetch in batches to avoid URL length limits
+                const batchSize = 50;
+                const questionMap: Record<string, Question> = {};
+                
+                for (let i = 0; i < questionIds.length; i += batchSize) {
+                    const batchIds = questionIds.slice(i, i + batchSize);
+                    const response = await fetch(
+                        `/api/questions/batch?ids=${batchIds.join(',')}&page=1&limit=${batchIds.length}`
+                    );
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch question data');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Add to our question map
+                    data.questions.forEach((question: Question) => {
+                        questionMap[question._id.toString()] = question;
+                    });
+                }
+                
+                setQuestionData(questionMap);
+            } catch (error) {
+                console.error('Error fetching question data for analytics:', error);
+            } finally {
+                setLoadingAnalytics(false);
+            }
+        };
+
+        fetchQuestionData();
+    }, [user?.question_tracking]);
+
     return (
         <div className={styles.container}>
             <div className={styles.header}>
@@ -71,7 +130,10 @@ const StudentProfile: React.FC<Props> = ({ user }) => {
                     </div>
                 </div>
             </div>
-            <QuestionHistory user={user} />
+
+            {/* Question Set Completion History */}
+            <QuestionSetHistory user={user} />
+            
             {/* Add Question Sets section for students with a room */}
             {user?.room && (
                 <div className={styles.roomQuestionSets}>
@@ -82,7 +144,18 @@ const StudentProfile: React.FC<Props> = ({ user }) => {
                     />
                 </div>
             )}
-
+            
+            {/* Analytics Component */}
+            {loadingAnalytics ? (
+                <div className={styles.analyticsContainer}>
+                    <h2>Performance Analytics</h2>
+                    <div className={styles.loading}>Loading analytics data...</div>
+                </div>
+            ) : (
+                <StudentAnalytics user={user} questionData={questionData} />
+            )}
+            
+            <QuestionHistory user={user} />
         </div>
     );
 }

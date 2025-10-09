@@ -14,6 +14,27 @@ interface QuestionTracking {
   [questionId: string]: QuestionStatus;
 }
 
+interface QuestionSetResults {
+  success: number;
+  failed: number;
+  unsure: number;
+}
+
+interface QuestionSetCompletionStats {
+  sessionStartTime: number;
+  sessionDuration: number;  // Changed from sessionEndTime + duration
+  questionSetLabel: string;
+  totalQuestions: number;
+  totalAnswered: number;    // Added new field
+  results: QuestionSetResults;
+  successRate: number;
+  completedAt: number;
+}
+
+interface QuestionSetTracking {
+  [questionSetId: string]: QuestionSetCompletionStats;
+}
+
 interface User {
   _id?: ObjectId;
   username: string;
@@ -28,6 +49,7 @@ interface User {
   birthdate?: string;
   profile_picture?: string;
   question_tracking?: QuestionTracking;
+  question_sets_tracking?: QuestionSetTracking;
   room?: ObjectId;
   pdf_limit_count?: number; // Track PDF generation limit for demo users
 }
@@ -96,16 +118,16 @@ class UserModel {
 
   async trackQuestion(userId: string, questionId: string, status: 'success' | 'failed' | 'unsure', isPdfQuestionSet: boolean = false) {
     const now = new Date();
-    
+
     // Find the user first
     const user = await this.collection.findOne({ _id: new ObjectId(userId) });
     if (!user) throw new Error('User not found');
-    
+
     // Initialize question_tracking if it doesn't exist
     if (!user.question_tracking) {
       user.question_tracking = {};
     }
-    
+
     // Update or create tracking entry
     const existing = user.question_tracking[questionId];
     user.question_tracking[questionId] = {
@@ -114,13 +136,57 @@ class UserModel {
       attempts: existing ? (existing.attempts || 1) + 1 : 1,
       isPdfQuestionSet
     };
-    
+
     // Update the user document
     await this.collection.updateOne(
       { _id: new ObjectId(userId) },
       { $set: { question_tracking: user.question_tracking } }
     );
-    
+
+    return true;
+  }
+
+  async trackQuestionSetCompletion(
+    userId: string, 
+    questionSetId: string, 
+    stats?: Omit<QuestionSetCompletionStats, 'completedAt'>
+  ) {
+    console.log("Tracking completion for question set:", questionSetId, "with stats:", stats);
+    // Find the user first
+    const user = await this.collection.findOne({ _id: new ObjectId(userId) });
+    if (!user) throw new Error('User not found');
+
+    // Initialize question_sets_tracking if it doesn't exist
+    if (!user.question_sets_tracking) {
+      user.question_sets_tracking = {};
+    }
+
+    // If stats are provided, store detailed completion statistics
+    if (stats) {
+      user.question_sets_tracking[questionSetId] = {
+        ...stats,
+        completedAt: Date.now()
+      };
+    } else {
+      // Basic completion tracking (backwards compatibility)
+      user.question_sets_tracking[questionSetId] = {
+        sessionStartTime: 0,
+        sessionDuration: 0,
+        questionSetLabel: 'Unknown',
+        totalQuestions: 0,
+        totalAnswered: 0,
+        results: { success: 0, failed: 0, unsure: 0 },
+        successRate: 0,
+        completedAt: Date.now()
+      };
+    }
+
+    // Update the user document
+    await this.collection.updateOne(
+      { _id: new ObjectId(userId) },
+      { $set: { question_sets_tracking: user.question_sets_tracking } }
+    );
+
     return true;
   }
 
@@ -130,26 +196,32 @@ class UserModel {
     return user?.question_tracking || {};
   }
 
+  // Get all tracked question set completions for a user
+  async getTrackedQuestionSets(userId: string) {
+    const user = await this.findUserById(userId);
+    return user?.question_sets_tracking || {};
+  }
+
   // Add trackActivity method to the UserModel class
   async trackActivity(userId: string, activityType: string, metadata: any = {}) {
     try {
       const now = new Date();
-      
+
       // Prepare the activity data
       const activityData = {
         type: activityType,
         timestamp: now,
         ...metadata
       };
-      
+
       // Calculate date for one week ago (for data retention)
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      
+
       // Update operations
       const updateOps: any = {
         // Add new activity to the recent activities array (limited to 1 week)
-        $push: { 
+        $push: {
           'recentActivities': {
             $each: [activityData],
             $position: 0, // Add at the beginning of array (most recent first)
@@ -161,24 +233,24 @@ class UserModel {
         // Update last active timestamp
         $set: { lastActive: now }
       };
-      
+
       // Remove activities older than one week
       await this.collection.updateOne(
         { _id: new ObjectId(userId) },
         { $pull: { 'recentActivities': { timestamp: { $lt: oneWeekAgo } } } }
       );
-      
+
       // If login, update specific login metrics
       if (activityType === 'login') {
         updateOps.$set.lastLogin = now;
       }
-      
+
       // Apply all updates
       const result = await this.collection.updateOne(
         { _id: new ObjectId(userId) },
         updateOps
       );
-      
+
       return result;
     } catch (error) {
       console.error('Error tracking activity:', error);
@@ -193,7 +265,7 @@ class UserModel {
         { _id: new ObjectId(userId), pdf_limit_count: { $gt: 0 } },
         { $inc: { pdf_limit_count: -1 } }
       );
-      
+
       return result.modifiedCount > 0;
     } catch (error) {
       console.error('Error decrementing PDF limit:', error);

@@ -2,6 +2,24 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
+// Define interfaces for question set tracking
+interface QuestionSetResults {
+  success: number;
+  failed: number;
+  unsure: number;
+}
+
+interface QuestionSetCompletionStats {
+  sessionStartTime: number;
+  sessionDuration: number;
+  questionSetLabel: string;
+  totalQuestions: number;
+  totalAnswered: number;
+  results: QuestionSetResults;
+  successRate: number;
+  completedAt: number;
+}
+
 // Define the shape of the user data
 export interface UserData {
   _id?: string;
@@ -20,6 +38,9 @@ export interface UserData {
       attempts: number;
       isPdfQuestionSet?: boolean;
     }
+  };
+  question_sets_tracking?: {
+    [questionSetId: string]: QuestionSetCompletionStats;
   };
   type?: 'student' | 'teacher' | 'reviewer' | 'moderator';
   room?: string;

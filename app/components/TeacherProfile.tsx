@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { UserData } from "context/UserContext"
 import { useEffect, useState } from "react"
 import QuestionList from './QuestionList'
+import QuestionSetPerformance from './QuestionSetPerformance'
 
 interface Props {
   user: UserData
@@ -156,6 +157,11 @@ const TeacherProfile: React.FC<Props> = ({user}) => {
           )}
         </div>
       </div>
+
+      {/* Add Question Set Performance Overview */}
+      {user?.room && (
+        <QuestionSetPerformance roomId={user.room} />
+      )}
 
       {/* Add Question Sets section */}
       {user?.room && (

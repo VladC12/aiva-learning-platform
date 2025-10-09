@@ -226,3 +226,237 @@
   font-size: 14px;
   color: #666;
 }
+
+/* Question Set Performance Styles */
+.questionSetPerformance {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.questionSetPerformance h2 {
+  font-size: 1.4rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.questionSetList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.questionSetCard {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+
+.questionSetCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.questionSetHeader {
+  padding: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.questionSetHeader h3 {
+  font-size: 1.1rem;
+  margin: 0;
+  color: #333;
+}
+
+.questionSetSummary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.expandIcon {
+  color: #4a90e2;
+  transition: transform 0.3s;
+}
+
+.expanded .expandIcon {
+  transform: rotate(180deg);
+}
+
+.questionSetDetails {
+  border-top: 1px solid #eee;
+  padding: 1.25rem;
+  background-color: white;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.resultsBreakdown {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 1.25rem;
+}
+
+.resultsBreakdown h4 {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.progressContainer {
+  margin-bottom: 1rem;
+}
+
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.progressBar {
+  height: 12px;
+  background-color: #f3f3f3;
+  border-radius: 6px;
+  display: flex;
+  overflow: hidden;
+}
+
+.progressSuccess {
+  height: 100%;
+  background-color: #4caf50;
+}
+
+.progressUnsure {
+  height: 100%;
+  background-color: #ff9800;
+}
+
+.progressFailed {
+  height: 100%;
+  background-color: #f44336;
+}
+
+.viewDetailsLink {
+  margin-top: 1rem;
+  text-align: right;
+}
+
+.viewDetailsLink a {
+  color: #4a90e2;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.viewDetailsLink a:hover {
+  text-decoration: underline;
+}
+
+/* Question Set Label */
+.questionSetLabel {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+/* Student Success Rate Distribution */
+.distributionSection {
+  margin-top: 1.5rem;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 1.25rem;
+}
+
+.distributionSection h4 {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.distributionBar {
+  height: 12px;
+  border-radius: 6px;
+  display: flex;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.excellentBar {
+  height: 100%;
+  background-color: #4caf50; /* Dark green */
+}
+
+.goodBar {
+  height: 100%;
+  background-color: #8bc34a; /* Light green */
+}
+
+.averageBar {
+  height: 100%;
+  background-color: #ffc107; /* Yellow */
+}
+
+.belowAverageBar {
+  height: 100%;
+  background-color: #ff9800; /* Orange */
+}
+
+.poorBar {
+  height: 100%;
+  background-color: #f44336; /* Red */
+}
+
+.distributionLegend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.excellentDot, .goodDot, .averageDot, .belowAverageDot, .poorDot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.excellentDot {
+  background-color: #4caf50;
+}
+
+.goodDot {
+  background-color: #8bc34a;
+}
+
+.averageDot {
+  background-color: #ffc107;
+}
+
+.belowAverageDot {
+  background-color: #ff9800;
+}
+
+.poorDot {
+  background-color: #f44336;
+}
