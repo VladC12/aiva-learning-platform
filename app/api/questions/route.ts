@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
     // Build MongoDB query from parameters
     const query: QuestionQuery = {};
 
-    // Always require DPS approved questions
+    // Always require DPS approved questions - this is the core requirement
     query.DPS_approved = true;
 
     // Handle required single value parameters
@@ -260,16 +260,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Handle DPS_approved filter (Yes/No/Unmarked) - always set to true for filtering
-    // We're overriding any existing filter logic to ensure questions are always DPS approved
-    
-    // Handle moderator view - only show questions marked as inCourse, isCorrect and DPS approved
+    // Handle moderator view - but ensure DPS_approved is always kept as true
     if (params.moderatorView === true) {
-      // Add $and condition to ensure we only show questions that are marked as in course, correct and DPS approved
+      // Add $and condition only for inCourse and isCorrect
       query.$and = query.$and || [];
       query.$and.push({ inCourse: true });
       query.$and.push({ isCorrect: true });
-      query.$and.push({ DPS_approved: true });
+      // No need to add DPS_approved here as it's already set at the top level
     }
 
     // Get pagination parameters
@@ -315,8 +312,10 @@ export async function POST(request: NextRequest) {
       const unsureObjectIds = unsureQuestionIds.map(id => new ObjectId(id));
       
       // Query for fresh questions (not attempted by user)
+      // Ensure DPS_approved is still true in all nested queries
       const freshQuestionsQuery = {
         ...query,
+        DPS_approved: true, // Explicitly set to ensure it's not overridden
         _id: { $nin: [...successObjectIds, ...failedObjectIds, ...unsureObjectIds] }
       };
       
@@ -361,8 +360,13 @@ export async function POST(request: NextRequest) {
         const failedToIncludeCount = Math.min(targetFailedCount, failedQuestionIds.length);
         
         // Get all failed questions that match criteria
+        // Ensure DPS_approved is still true for failed questions
         const allFailedQuestions = await db.collection('Questions')
-          .find({ ...query, _id: { $in: failedQuestionIds.map(id => new ObjectId(id)) } })
+          .find({ 
+            ...query, 
+            DPS_approved: true, // Explicitly set to ensure it's not overridden
+            _id: { $in: failedQuestionIds.map(id => new ObjectId(id)) } 
+          })
           .toArray() as Question[];
           
         // Balance failed questions (if there are enough)
@@ -391,8 +395,13 @@ export async function POST(request: NextRequest) {
       let unsureQuestions: Question[] = [];
       if (unsureQuestionIds.length > 0) {
         // Get all unsure questions that match criteria
+        // Ensure DPS_approved is still true for unsure questions
         const allUnsureQuestions = await db.collection('Questions')
-          .find({ ...query, _id: { $in: unsureQuestionIds.map(id => new ObjectId(id)) } })
+          .find({ 
+            ...query, 
+            DPS_approved: true, // Explicitly set to ensure it's not overridden
+            _id: { $in: unsureQuestionIds.map(id => new ObjectId(id)) } 
+          })
           .toArray() as Question[];
           
         // Balance unsure questions (if there are enough)
@@ -414,9 +423,12 @@ export async function POST(request: NextRequest) {
       
       // If we still don't have enough questions, just get any that match the criteria
       if (questionPool.length < limit) {
+        // Ensure DPS_approved is still true in the final query
+        const finalQuery = { ...query, DPS_approved: true };
+        
         // Get all matching questions
         const allRemainingQuestions = await db.collection('Questions')
-          .find(query)
+          .find(finalQuery)
           .toArray() as Question[];
           
         // Filter out questions we already have
@@ -448,12 +460,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(questionPool);
     } else {
       // Standard query without user tracking
+      // Ensure DPS_approved is still true in the final query
+      const finalQuery = { ...query, DPS_approved: true };
+      
       // Log the final query for debugging
-      console.log('Final query:', JSON.stringify(query));
+      console.log('Final query:', JSON.stringify(finalQuery));
 
       // Find all questions matching the criteria (without pagination)
       const allQuestions = await db.collection('Questions')
-        .find(query)
+        .find(finalQuery)
         .toArray() as Question[];
         
       console.log(`Found ${allQuestions.length} matching questions before balancing`);
