@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import clientPromise from '@/lib/mongodb';
-import UserModel from '@/models/User';
 import { ObjectId } from 'mongodb';
 
 export async function GET(
@@ -37,10 +36,9 @@ export async function GET(
     
     // Check if the requesting user is a teacher
     const teacherId = decoded.userId;
-    let teacherObjectId;
     
     try {
-      teacherObjectId = new ObjectId(teacherId);
+      const _teacherObjectId = new ObjectId(teacherId);
     } catch (error) {
       console.error(`Invalid teacher ID: ${teacherId}, ${error}`);
       return NextResponse.json(

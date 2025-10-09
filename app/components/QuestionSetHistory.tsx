@@ -17,7 +17,7 @@ const QuestionSetHistory: React.FC<QuestionSetHistoryProps> = ({ user }) => {
             <div className={styles.analyticsContainer}>
                 <h2>Question Set History</h2>
                 <div className={styles.emptyAnalytics}>
-                    <p>You haven't completed any question sets yet.</p>
+                    <p>You haven&apos;t completed any question sets yet.</p>
                     <p>Complete a question set to see your performance statistics here.</p>
                 </div>
             </div>
@@ -31,7 +31,7 @@ const QuestionSetHistory: React.FC<QuestionSetHistoryProps> = ({ user }) => {
     }));
 
     // Sort completed sets
-    let sortedSets = [...completedSets];
+    const sortedSets = [...completedSets];
     if (sortBy === 'date') {
         sortedSets.sort((a, b) => b.completedAt - a.completedAt);
     } else if (sortBy === 'score') {

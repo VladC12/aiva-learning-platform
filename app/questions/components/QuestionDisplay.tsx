@@ -270,7 +270,6 @@ function QuestionDisplay({
                     totalAnswered, 
                     successRate, 
                     duration, 
-                    endTime
                 );
             } else {
                 // Move to next question after tracking
@@ -289,7 +288,6 @@ function QuestionDisplay({
         currentTotalAnswered: number,
         currentSuccessRate: number,
         duration: number,
-        endTime: number
     ) => {
         if (!questionSetId) {
             console.log("Not a set. Skipping completion stats storage.");
@@ -344,72 +342,10 @@ function QuestionDisplay({
         }
     };
 
-    // The original function is kept for the "last question via Next button" case
-    const storeCompletionStats = async () => {
-        if (!questionSetId) {
-            console.log("Not a set. Skipping completion stats storage.");
-            return;
-        }
-
-        if (!user) {
-            console.error("User not logged in, can't store completion stats");
-            return;
-        }
-
-        try {            
-            const duration = sessionEndTime ? sessionEndTime - sessionStartTime : 0;
-            const currentTotalAnswered = questionStatus.success + questionStatus.failed + questionStatus.unsure;
-            const currentSuccessRate = currentTotalAnswered > 0 
-                ? Math.round((questionStatus.success / currentTotalAnswered) * 100) 
-                : 0;
-                
-            const payload = {
-                userId: user._id,
-                questionSetId: questionSetId,
-                sessionStartTime,
-                sessionDuration: duration,
-                questionSetLabel,
-                totalQuestions,
-                totalAnswered: currentTotalAnswered,
-                results: {
-                    success: questionStatus.success,
-                    failed: questionStatus.failed,
-                    unsure: questionStatus.unsure
-                },
-                successRate: currentSuccessRate
-            };
-
-            console.log("Storing Completion Stats:", 
-                currentTotalAnswered, 
-                totalQuestions, 
-                payload.results,
-                formatDuration(duration)
-            );
-
-            const response = await fetch('/api/store-completion-stats', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to store completion stats');
-            }
-
-            console.log('Successfully stored completion statistics');
-        } catch (error) {
-            console.error('Error storing completion stats:', error);
-            // We don't need to show this error to the user, just log it
-        }
-    };
-
     // Calculate stats for completed screen
     const totalQuestions = questions.length;
     const totalAnswered = questionStatus.success + questionStatus.failed + questionStatus.unsure;
     const successRate = totalAnswered > 0 ? Math.round((questionStatus.success / totalAnswered) * 100) : 0;
-    const sessionDuration = sessionEndTime ? formatDuration(sessionEndTime - sessionStartTime) : '';
 
     const handleReturnHome = () => {
         if (completed) {
