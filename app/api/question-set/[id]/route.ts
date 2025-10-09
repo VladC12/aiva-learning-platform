@@ -28,6 +28,7 @@ export async function GET(request: NextRequest,
 
     // Find question set first to determine its type
     const questionSet = await db.collection('QuestionSets').findOne({ _id: objectId });
+    const questionSetLabel = questionSet?.label || 'Unknown Set';
 
     if (!questionSet) {
       return NextResponse.json({ error: 'Question set not found' }, { status: 404 });
@@ -61,8 +62,8 @@ export async function GET(request: NextRequest,
     const questions = await db.collection('Questions')
       .find({ _id: { $in: questionIds } })
       .toArray();
-    
-    return NextResponse.json(questions);
+
+    return NextResponse.json({ questions: questions, label: questionSetLabel });
   } catch (error) {
     console.error('Error fetching question set:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
