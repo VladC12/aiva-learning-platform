@@ -17,11 +17,14 @@ export async function POST(request: Request) {
     const db = client.db();
     const userModel = new UserModel(db);
 
-    // Find user by email
-    const user = await userModel.findUserByEmail(email_address);
+    // Convert email to lowercase for consistent logging and debugging
+    const normalizedEmail = email_address.toLowerCase();
+
+    // Find user by email (now using case-insensitive lookup)
+    const user = await userModel.findUserByEmail(normalizedEmail);
 
     if (!user) {
-      console.log('User not found:', email_address);
+      console.log('User not found:', normalizedEmail);
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -29,7 +32,7 @@ export async function POST(request: Request) {
     }
 
     // Validate password
-    const isValidPassword = await userModel.validatePassword(email_address, password);
+    const isValidPassword = await userModel.validatePassword(normalizedEmail, password);
     
     console.log('Password validation result:', isValidPassword);
 
