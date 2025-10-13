@@ -6,6 +6,13 @@ export async function POST(request: Request) {
   const { token, password } = await request.json();
 
   try {
+    if (!token || !password) {
+      return NextResponse.json(
+        { error: 'Token and new password are required' },
+        { status: 400 }
+      );
+    }
+
     const client = await clientPromise;
     const db = client.db();
     const userModel = new UserModel(db);
