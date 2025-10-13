@@ -52,6 +52,8 @@ interface User {
   question_sets_tracking?: QuestionSetTracking;
   room?: ObjectId;
   pdf_limit_count?: number; // Track PDF generation limit for demo users
+  lastActive?: Date; // Track last active timestamp
+  lastLogin?: Date;  // Track last login timestamp
 }
 
 class UserModel {
@@ -72,7 +74,9 @@ class UserModel {
   }
 
   async findUserByEmail(email: string) {
-    return this.collection.findOne({ email_address: email });
+    return this.collection.findOne({ 
+      email_address: { $regex: new RegExp(`^${email}$`, 'i') }
+    });
   }
 
   async findUserById(userId: string) {

@@ -106,7 +106,7 @@
 
 .tableHeader {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
   background-color: #f3f4f6;
   padding: 1rem;
   font-weight: 600;
@@ -115,7 +115,7 @@
 
 .studentRow {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
   padding: 1rem;
   border-bottom: 1px solid #f0f0f0;
   align-items: center;
@@ -459,4 +459,24 @@
 
 .poorDot {
   background-color: #f44336;
+}
+
+.activityColumn {
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.recentActivity {
+  color: #16a34a;
+  font-weight: 500;
+}
+
+.moderateActivity {
+  color: #ca8a04;
+  font-weight: 400;
+}
+
+.oldActivity {
+  color: #64748b;
+  font-weight: 400;
 }

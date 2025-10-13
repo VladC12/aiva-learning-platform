@@ -14,6 +14,8 @@ interface Student extends UserData {
   successQuestions: number;
   failedQuestions: number;
   unsureQuestions: number;
+  lastActive?: Date;  // Added last active timestamp
+  lastLogin?: Date;   // Added last login timestamp
 }
 
 interface Room {
@@ -84,6 +86,45 @@ const TeacherProfile: React.FC<Props> = ({user}) => {
       ...prev,
       page: newPage
     }));
+  };
+
+  // Helper function to format date for display
+  const formatLastActive = (date: Date | string | undefined): string => {
+    if (!date) return 'Never';
+    
+    const lastActiveDate = typeof date === 'string' ? new Date(date) : date;
+    const now = new Date();
+    const diffMs = now.getTime() - lastActiveDate.getTime();
+    const diffMins = Math.round(diffMs / 60000);
+    const diffHours = Math.round(diffMs / 3600000);
+    const diffDays = Math.round(diffMs / 86400000);
+    
+    if (diffMins < 60) {
+      return diffMins <= 1 ? 'Just now' : `${diffMins} mins ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
+    } else if (diffDays < 30) {
+      return `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
+    } else {
+      return lastActiveDate.toLocaleDateString();
+    }
+  };
+
+  // Helper function to get activity status class
+  const getActivityClass = (date: Date | string | undefined): string => {
+    if (!date) return '';
+    
+    const lastActiveDate = typeof date === 'string' ? new Date(date) : date;
+    const now = new Date();
+    const diffHours = (now.getTime() - lastActiveDate.getTime()) / 3600000;
+    
+    if (diffHours < 24) {
+      return styles.recentActivity;
+    } else if (diffHours < 72) {
+      return styles.moderateActivity;
+    } else {
+      return styles.oldActivity;
+    }
   };
 
   return (
@@ -193,6 +234,7 @@ const TeacherProfile: React.FC<Props> = ({user}) => {
                 <div className={styles.statsColumn}>Success</div>
                 <div className={styles.statsColumn}>Failed</div>
                 <div className={styles.statsColumn}>Unsure</div>
+                <div className={styles.activityColumn}>Last Active</div>
                 <div className={styles.actionsColumn}>Actions</div>
               </div>
               
@@ -210,6 +252,9 @@ const TeacherProfile: React.FC<Props> = ({user}) => {
                   </div>
                   <div className={styles.statsColumn}>
                     <span className={styles.unsureText}>{student.unsureQuestions || 0}</span>
+                  </div>
+                  <div className={`${styles.activityColumn} ${getActivityClass(student.lastActive || student.lastLogin)}`}>
+                    {formatLastActive(student.lastActive || student.lastLogin)}
                   </div>
                   <div className={styles.actionsColumn}>
                     <Link href={`/student/${student._id}`} className={styles.viewButton}>
