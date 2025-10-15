@@ -171,7 +171,8 @@ export default function Bank() {
         const questionsData = await fetchQuestions(
           teacherFilters,
           { page: pagination.page, limit: pagination.limit },
-          isModerator
+          isModerator,
+          true // Pass true for isBank parameter
         );
         
         setQuestions(questionsData);
