@@ -466,27 +466,46 @@ export async function POST(request: NextRequest) {
       // Log the final query for debugging
       console.log('Final query:', JSON.stringify(finalQuery));
 
-      // Find all questions matching the criteria (without pagination)
-      const allQuestions = await db.collection('Questions')
-        .find(finalQuery)
-        .toArray() as Question[];
+      // Check if this is a bank request where we don't need balancing
+      const isBank = params.isBank === true;
+      
+      if (isBank) {
+        // For bank requests, we want a consistent order by question number
+        // Apply pagination directly in the database query for efficiency
+        console.log('Bank request detected - skipping balancing and sorting by q_number');
         
-      console.log(`Found ${allQuestions.length} matching questions before balancing`);
-      
-      // Apply balancing algorithm
-      const balancedQuestions = await balanceQuestions(
-        allQuestions, 
-        limit, 
-        hasDifficultyFilter,
-        selectedTopics
-      );
-      
-      // Apply pagination to the balanced questions
-      const pagedQuestions = balancedQuestions.slice(skip, skip + limit);
-      
-      console.log(`Returning ${pagedQuestions.length} balanced questions for page ${page}, limit ${limit}`);
-
-      return NextResponse.json(pagedQuestions);
+        const pagedQuestions = await db.collection('Questions')
+          .find(finalQuery)
+          .sort({ q_number: 1 }) // Sort by question number ascending
+          .skip(skip)
+          .limit(limit)
+          .toArray() as Question[];
+        
+        console.log(`Returning ${pagedQuestions.length} questions for bank page ${page}, limit ${limit}`);
+        return NextResponse.json(pagedQuestions);
+      } else {
+        // For normal requests, apply the balancing algorithm
+        // Find all questions matching the criteria (without pagination)
+        const allQuestions = await db.collection('Questions')
+          .find(finalQuery)
+          .toArray() as Question[];
+          
+        console.log(`Found ${allQuestions.length} matching questions before balancing`);
+        
+        // Apply balancing algorithm
+        const balancedQuestions = await balanceQuestions(
+          allQuestions, 
+          limit, 
+          hasDifficultyFilter,
+          selectedTopics
+        );
+        
+        // Apply pagination to the balanced questions
+        const pagedQuestions = balancedQuestions.slice(skip, skip + limit);
+        
+        console.log(`Returning ${pagedQuestions.length} balanced questions for page ${page}, limit ${limit}`);
+        return NextResponse.json(pagedQuestions);
+      }
     }
   } catch (error) {
     console.error('Failed to fetch questions:', error);

@@ -12,7 +12,8 @@ export const fetchFilters = async () => {
 export const fetchQuestions = async (
   filters: FilterState,
   pagination: { page: number; limit: number },
-  isModerator: boolean
+  isModerator: boolean,
+  isBank: boolean = false
 ) => {
   // Create request body for POST request
   const requestBody = {
@@ -29,7 +30,8 @@ export const fetchQuestions = async (
     q_number: filters.q_number || '',
     DPS_approved: filters.DPS_approved.join(','),
     // For moderators, only show questions that are marked as in course and correct
-    moderatorView: isModerator
+    moderatorView: isModerator,
+    isBank: isBank // Add the isBank flag to indicate this is a bank request
   };
 
   const response = await fetch('/api/questions', {
